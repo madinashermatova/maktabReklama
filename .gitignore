@@ -1,0 +1,19 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Blender / render outputs
+/renders/
+*.blend1
+blender/cache/
+
+# Generated copies for Remotion (sources live in renders/ and assets/audio/)
+public/renders/*
+!public/renders/.gitkeep
+public/audio/*
+!public/audio/.gitkeep
+__pycache__/

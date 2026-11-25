@@ -1,0 +1,121 @@
+{
+  "_comment": "GENERATED from src/timeline.ts by scripts/export-timeline.mjs — do not edit by hand.",
+  "fps": 30,
+  "totalFrames": 2250,
+  "baseWidth": 1920,
+  "baseHeight": 1080,
+  "previewPercentage": 50,
+  "previewSamples": 16,
+  "scenes": [
+    {
+      "index": 1,
+      "id": "s01_website",
+      "name": "Website",
+      "from": 0,
+      "end": 269,
+      "durationInFrames": 270,
+      "source": "blender",
+      "framesDir": "renders/s01_website"
+    },
+    {
+      "index": 2,
+      "id": "s02_turnstile",
+      "name": "Turnstile with Face ID",
+      "from": 270,
+      "end": 449,
+      "durationInFrames": 180,
+      "source": "blender",
+      "framesDir": "renders/s02_turnstile"
+    },
+    {
+      "index": 3,
+      "id": "s03_cctv",
+      "name": "CCTV",
+      "from": 450,
+      "end": 599,
+      "durationInFrames": 150,
+      "source": "blender",
+      "framesDir": "renders/s03_cctv"
+    },
+    {
+      "index": 4,
+      "id": "s04_english",
+      "name": "English class",
+      "from": 600,
+      "end": 809,
+      "durationInFrames": 210,
+      "source": "blender",
+      "framesDir": "renders/s04_english"
+    },
+    {
+      "index": 5,
+      "id": "s05_russian",
+      "name": "Russian class",
+      "from": 810,
+      "end": 989,
+      "durationInFrames": 180,
+      "source": "blender",
+      "framesDir": "renders/s05_russian"
+    },
+    {
+      "index": 6,
+      "id": "s06_football",
+      "name": "Football field",
+      "from": 990,
+      "end": 1229,
+      "durationInFrames": 240,
+      "source": "blender",
+      "framesDir": "renders/s06_football"
+    },
+    {
+      "index": 7,
+      "id": "s07_it",
+      "name": "IT class",
+      "from": 1230,
+      "end": 1469,
+      "durationInFrames": 240,
+      "source": "blender",
+      "framesDir": "renders/s07_it"
+    },
+    {
+      "index": 8,
+      "id": "s08_cafeteria",
+      "name": "Cafeteria — plov",
+      "from": 1470,
+      "end": 1709,
+      "durationInFrames": 240,
+      "source": "blender",
+      "framesDir": "renders/s08_cafeteria"
+    },
+    {
+      "index": 9,
+      "id": "s09_dormitory",
+      "name": "Dormitory",
+      "from": 1710,
+      "end": 1919,
+      "durationInFrames": 210,
+      "source": "blender",
+      "framesDir": "renders/s09_dormitory"
+    },
+    {
+      "index": 10,
+      "id": "s10_rewind",
+      "name": "Rewind",
+      "from": 1920,
+      "end": 2069,
+      "durationInFrames": 150,
+      "source": "remotion",
+      "framesDir": "renders/s10_rewind"
+    },
+    {
+      "index": 11,
+      "id": "s11_brand",
+      "name": "Brand reveal",
+      "from": 2070,
+      "end": 2249,
+      "durationInFrames": 180,
+      "source": "blender",
+      "framesDir": "renders/s11_brand"
+    }
+  ]
+}
