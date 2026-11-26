@@ -56,6 +56,62 @@ export const SCENES: readonly SceneDef[] = [
 
 export const TOTAL_FRAMES = 2250; // 75 s × 30 fps
 
+// --------------------------------------------------------------------------- scene 1 beats
+
+/** Scene 1 "Digital website universe" beats — absolute film frames (scene 1 starts at 0). docs/storyboard.md → Scene 1. */
+export const S01_BEATS = {
+  fadeInEnd: 12, // black → picture
+  scrollStart: 14, // strip starts to move (slow), accelerates, flies, decelerates
+  scrollStop: 190, // precise stop on the school website hero
+  cursorIn: 194, // cursor fades in
+  cursorArrive: 210, // cursor reaches the hero button (hover)
+  click: 215, // press + ripple
+  diveStart: 218, // camera starts the dive into the screen
+  uiFadeStart: 221, // website UI fades away, leaving only the hero photo
+  uiFadeEnd: 236,
+  alignedAt: 246, // camera square-on to the screen, centred, roll matched
+  photoOverlayStart: 252, // Remotion lays the exact photo pixels over the render (cross-fade) …
+  photoOverlayEnd: 258, // … fully the exact photo from here to the cut
+};
+
+/**
+ * D hand-off (1 → 2). Scene 2's first frame (270) shows the hero photo at ENTRY_SCALE (18 mm vs the 15.33 mm photo
+ * lens) and the scene-2 camera moves forward at ENTRY_SPEED toward the facade FACADE_DISTANCE away
+ * (blender/scripts/build_entrance.py), i.e. an apparent push rate of ENTRY_SPEED / FACADE_DISTANCE per frame.
+ * Scene 1 reaches the same scale and rate: s(269) = ENTRY_SCALE / (1 + rate), constant rate over the last HOLD frames.
+ */
+export const HANDOFF_D = {
+  entryScale: 1.174,
+  entrySpeed: 0.03,
+  facadeDistance: 8.48,
+  holdFrames: 6,
+  /** Photo scale (photo width / frame width) when the dive starts; Blender places the camera from it. */
+  diveStartScale: 0.6,
+};
+
+/**
+ * Scale of the website/photo (screen width / frame width) on the scene-1 dive, film frames diveStart … 269.
+ * Blender's camera distance and Remotion's exact-photo overlay both use this one curve (via blender/timeline.json).
+ * ln s: cubic Hermite (slope 0 → push rate) from diveStart to 269 − holdFrames, then constant rate to the cut.
+ */
+export const s01PhotoScale = (frame: number): number => {
+  const end = SCENES[0].from + SCENES[0].durationInFrames - 1; // 269, the last frame of scene 1
+  const rate = Math.log(1 + HANDOFF_D.entrySpeed / HANDOFF_D.facadeDistance); // ln-scale per frame
+  const lnAt270 = Math.log(HANDOFF_D.entryScale);
+  const t1 = end - HANDOFF_D.holdFrames;
+  const ln1 = lnAt270 - rate * (end + 1 - t1);
+  const ln0 = Math.log(HANDOFF_D.diveStartScale);
+  if (frame <= S01_BEATS.diveStart) return HANDOFF_D.diveStartScale;
+  if (frame >= t1) return Math.exp(ln1 + rate * (frame - t1));
+  const n = t1 - S01_BEATS.diveStart;
+  const u = (frame - S01_BEATS.diveStart) / n;
+  const h00 = 2 * u ** 3 - 3 * u ** 2 + 1;
+  const h10 = u ** 3 - 2 * u ** 2 + u;
+  const h01 = -2 * u ** 3 + 3 * u ** 2;
+  const h11 = u ** 3 - u ** 2;
+  return Math.exp(h00 * ln0 + h10 * 0 * n + h01 * ln1 + h11 * rate * n);
+};
+
 export const sceneEnd = (s: SceneDef): number => s.from + s.durationInFrames - 1;
 export const framesDirOf = (s: SceneDef): string => s.framesDir ?? `renders/${s.id}`;
 

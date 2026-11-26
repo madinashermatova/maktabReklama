@@ -78,29 +78,24 @@ Defined in scenes 10 and 11.
 
 ---
 
-## Scene 1 — Website (0–269, 9.0 s)
+## Scene 1 — Digital website universe (0–269, 9.0 s)
 
-**ENTRY:** film start. Black → fade up from frame 0–12.
-**EXIT:** D at frame 269 — the website hero (the real entrance photo, sky replaced) fills the frame, pushed in 1.174× around its centre.
+Concept (user decision 2026-11-26, replaces the former desk / code-melt board): a large premium floating display in a dark hazy void scrolls through a strip of invented websites and stops on the ZIYO YOG’DUSI website; a cursor clicks its hero button and the camera dives into the screen until the real entrance photo fills the frame. Built by `blender/scripts/scene_01_website.py` → `blender/scenes/s01_website.blend`. Beats: `S01_BEATS` in `src/timeline.ts`.
 
-The website header shows the wordmark **ZIYO YOG’DUSI** (U+2019, same verified font as scene 11), with no symbol or icon. An optional logo slot left of the wordmark stays empty while `logoFile` is `null`.
+**ENTRY:** film start. Black → fade up 0–12.
+**EXIT:** D at frame 269 — the website hero (the real entrance photo, sky replaced) fills the frame, pushed in 1.174× around its centre (Remotion lays the exact photo pixels over the render 252–258 → 269).
+
+Website strip (`blender/kit/textures/website_strip.png`, made by `npm run website:render` + `tools/build_website_strip.py`): 6 invented generic sites (travel, store, news, fitness, bank-like dashboard, portfolio — invented names, readable words, no real brands) and the school site last. The school page shows only the wordmark **ZIYO YOG’DUSI** (U+2019, no quotes, no symbol; empty logo slot while `logoFile` is `null`), Uzbek navigation (Bosh sahifa, Biz haqimizda, Qabul, Aloqa) and facts only (Samarqand viloyati, 1–11-sinflar, xususiy maktab). Hero image = the approved real photo `assets/hero/entrance_hero_1920.png`.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 1a | 0 | Dark, calm study desk; a slim unbranded monitor, the screen glowing with the invented school website hero page (hero image = the REAL entrance photo with the sky replaced, never a render) | Front, eye level, 50 mm, slow dolly in; shallow DOF (f/2.8) on the screen | Moody: the screen is the key light (cool 6500 K), faint warm practical lamp behind | Fade up; the website hero shows the approved photo `assets/hero/entrance_hero_1920.png` (real entrance, sky replaced) with a slow parallax |
-| 1b | 75 | Screen fills ~70 % of the frame; cursor (no hand) glides over menu items, opens an "Admissions"-type page — generic labels, no numbers or claims | 50 → 65 mm push-in | Same | Smooth UI scroll, buttons respond |
-| 1c | 140 | The page flips into its source-code view: lines of code scroll | 85 mm, close on the screen | Screen shifts cyan → warm amber | Code lines start to glow hot |
-| 1d | 190 | Code lines detach from the glass and melt into thick glossy amber liquid, flowing down the screen and over the bezel | 50 mm, slight tilt down | Liquid slightly emissive, lights the desk | Liquid drips with weight (accelerating fall, stretching, bead-off) |
-| 1e | 235–269 | As the liquid drains, the website hero photo of the real entrance is revealed clean behind it; the camera pushes into the screen until the photo fills the frame (pushed in 1.174× at 269) | 50 mm on the monitor, then a 2D push-in on the photo | The photo’s morning light | Ease into the D push-in rate |
+| 1a | 0–14 | Floating display (thin bevelled aluminium rim, black border, glass cover), tilted diagonally (top edge rising to the right), in a dark void with subtle haze; first page (travel site) on screen | 35 mm, oblique (36° around the display), f/4 on the screen centre; slow drift in | Teal and amber rim lights behind the display, a top light shaft in the haze, cool screen spill | Fade up 0–12 |
+| 1b | 14–102 | The strip starts to scroll slowly, then accelerates | camera keeps drifting in, orbit 36° → 22° | same | Scroll F-curve: flat start, peak 0.30 pages/frame at 102 |
+| 1c | 102–190 | Pages fly past (3 passes of the 6 sites; strong shutter blur), decelerate and land **exactly** on the school site at 190 | same | same | Smooth landing, zero speed at 190 |
+| 1d | 194–215 | Cursor (generic arrow, no hand) fades in, glides on an eased arc to "Maktab bilan tanishing", hover at 210, press + soft ripple at 215 | camera settles to rest at the click (218) | same | Eased path; press scale 0.955 |
+| 1e | 218–269 | Website UI fades away (221–236) leaving only the photo; the camera dives square-on into the screen (aligned, roll matched, at 246); the photo fills the frame and keeps pushing at the D rate | 35 mm; distance from `s01PhotoScale(frame)` (shared curve, `blender/timeline.json`) | the photo's morning light; haze thins out 226–246 | Hermite ease into the constant D push rate (last 6 frames) |
 
-**Sound cues**
-- 0 — music start (soft intro)
-- 75 — soft UI click
-- 104 — second UI click + page swipe whoosh
-- 140 — digital "code reveal" shimmer
-- 190 — low sizzle/hum as the code heats; liquid stretch
-- 215, 228, 241 — three thick liquid drip "plops" (sync to drip contacts)
-- 250–269 — soft rising whoosh as the camera pushes into the entrance photo
+**Sound cues:** see `docs/sound-cues.md` → Scene 1 (scroll whoosh 14 → peak 102 → 190, scroll stop 190, hover 210, click 215, dive whoosh 218 → 270).
 
 ---
 

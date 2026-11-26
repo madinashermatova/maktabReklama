@@ -16,6 +16,10 @@ public/renders/*
 !public/renders/.gitkeep
 public/audio/*
 !public/audio/.gitkeep
+/public/fonts/
+/public/hero/
+/public/web_images/
+/public/brand/
 __pycache__/
 
 # Local Python deps for Blender's python (tools/setup notes in docs/status.md)

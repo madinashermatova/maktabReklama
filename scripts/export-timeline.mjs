@@ -26,6 +26,12 @@ const data = {
     source: s.source,
     framesDir: t.framesDirOf(s),
   })),
+  s01: {
+    beats: t.S01_BEATS,
+    handoffD: t.HANDOFF_D,
+    // s01PhotoScale(frame) for every frame of scene 1 (Blender's dive camera reads this table).
+    photoScale: Array.from({ length: t.SCENES[0].durationInFrames }, (_, i) => t.s01PhotoScale(t.SCENES[0].from + i)),
+  },
 };
 
 writeFileSync(out, JSON.stringify(data, null, 2) + "\n");

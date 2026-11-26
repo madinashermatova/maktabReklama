@@ -1,6 +1,7 @@
 // 1) Scans public/renders/<sceneId>/ for frame sequences (e.g. 0270.png) and writes
 //    src/generated/renders.json, which <SceneSequence> reads to decide image sequence vs. placeholder.
-// 2) Mirrors assets/audio/{sfx,music}/ into public/audio/ so Remotion can serve them.
+// 2) Mirrors assets/audio/{sfx,music}/ into public/audio/ and assets/{fonts,hero,web_images,brand}/ into public/ so Remotion
+//    can serve them (the copies in public/ are git-ignored; assets/ is the source).
 // Usage: node scripts/sync-renders.mjs   (npm run sync)
 import { cpSync, existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -42,4 +43,9 @@ for (const sub of ["sfx", "music"]) {
       filter: (p) => !p.endsWith(".gitkeep"),
     });
   }
+}
+
+for (const sub of ["fonts", "hero", "web_images", "brand"]) {
+  const src = join(root, "assets", sub);
+  if (existsSync(src)) cpSync(src, join(root, "public", sub), { recursive: true });
 }
