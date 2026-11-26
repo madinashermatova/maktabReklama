@@ -610,3 +610,68 @@ def build_distant_trees(c, M, rnd):
         make_tree(f"far_tree_{k:02d}", (x, y, 0.0), c, M, rnd, height=h, crown_r=h * 0.4, clusters=int(22 + h),
                   cards_per_vert=0.25, leaf_size=0.5)
         k += 1
+
+
+def make_branching_tree(name, loc, coll, bark_mat, leaf_mat, rnd: random.Random, height=9.0,
+                        depth=5, leaf_size=0.07, leaves_per_twig=34, trunk_r=0.16):
+    """Realistic deciduous tree: recursive branching skeleton (tapered tubes per level, gently curved, splitting
+    2–3 ways with ~25–45° divergence) and real leaf geometry — individual leaf cards (alpha leaf shape) clustered
+    along every terminal twig. Sparse enough that sky shows through, like the photographed tree."""
+    x0, y0, z0 = loc
+    levels: dict[int, list] = {}
+    twigs = []
+
+    def grow(p, d, length, level):
+        pts = [p]
+        cur, dirv = p.copy(), d.copy()
+        segs = 4
+        for _ in range(segs):
+            dirv = (dirv + Vector((rnd.uniform(-0.18, 0.18), rnd.uniform(-0.18, 0.18), rnd.uniform(-0.05, 0.12)))).normalized()
+            cur = cur + dirv * (length / segs)
+            pts.append(cur.copy())
+        levels.setdefault(level, []).append([tuple(v) for v in pts])
+        if level >= depth:
+            twigs.append(pts)
+            return
+        n = 2 if level == 0 else rnd.choice((2, 2, 3))
+        for k in range(n):
+            ang = rnd.uniform(0.45, 0.8) if level else rnd.uniform(0.5, 0.75)
+            az = (k / n) * 2 * math.pi + rnd.uniform(-0.6, 0.6)
+            side = dirv.orthogonal().normalized()
+            side.rotate(Matrix.Rotation(az, 3, dirv))
+            nd = (dirv * math.cos(ang) + side * math.sin(ang)).normalized()
+            nd.z = max(nd.z, 0.15 if level < depth - 1 else -0.2)
+            start = pts[-1] if k == 0 else pts[-2].lerp(pts[-1], rnd.uniform(0.4, 0.9))
+            grow(start, nd.normalized(), length * rnd.uniform(0.62, 0.78), level + 1)
+
+    trunk_len = height * 0.42
+    grow(Vector((x0, y0, z0)), Vector((rnd.uniform(-0.05, 0.05), rnd.uniform(-0.05, 0.05), 1)).normalized(), trunk_len, 0)
+    objs = []
+    for lv, polys in levels.items():
+        r = trunk_r * (0.62 ** lv)
+        t = K.tube(f"{name}_branches_L{lv}", polys, max(r, 0.006), bark_mat, coll, fillet=0.0)
+        t.data.bevel_resolution = 2 if lv < 3 else 1
+        objs.append(t)
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.verify()
+    for tw in twigs:
+        a, b = tw[-2], tw[-1]
+        for k in range(leaves_per_twig):
+            p = a.lerp(b, rnd.random()) + Vector((rnd.gauss(0, 0.24), rnd.gauss(0, 0.24), rnd.gauss(0, 0.18)))
+            nrm = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(-0.3, 1))).normalized()
+            side = nrm.cross(Vector((0, 0, 1)))
+            side = side.normalized() if side.length > 1e-3 else Vector((1, 0, 0))
+            up = side.cross(nrm).normalized()
+            s = leaf_size * rnd.uniform(0.7, 1.3)
+            quad = [p - side * s * 0.35, p + side * s * 0.35, p + side * s * 0.35 + up * s, p - side * s * 0.35 + up * s]
+            f = bm.faces.new([bm.verts.new(q) for q in quad])
+            for loop, uvc in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
+                loop[uv].uv = uvc
+    me = bpy.data.meshes.new(f"{name}_leaves")
+    bm.to_mesh(me)
+    bm.free()
+    me.materials.append(leaf_mat)
+    leaves = bpy.data.objects.new(f"{name}_leaves", me)
+    coll.objects.link(leaves)
+    objs.append(leaves)
+    return objs, twigs
