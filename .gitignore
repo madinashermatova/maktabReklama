@@ -17,3 +17,6 @@ public/renders/*
 public/audio/*
 !public/audio/.gitkeep
 __pycache__/
+
+# Local Python deps for Blender's python (tools/setup notes in docs/status.md)
+/tools/pydeps/

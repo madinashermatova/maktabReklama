@@ -7,7 +7,7 @@ States: **not started** · **in progress** · **review** · **approved**
 | Item | State | Notes |
 |---|---|---|
 | Environment audit | approved | EEVEE 14.1 s/frame, Cycles CPU 56.3 s/frame @1080p (simple scene) |
-| CLAUDE.md rulebook | review | 2026-11-26: lens rule added (24/35/50 standard; 18 wide, 85/100 close-up; nothing outside 18–100 mm) — enforced in `_common.set_lens()` |
+| CLAUDE.md rulebook | review | 2026-11-26: brand apostrophe → ’ U+2019 (as on the real sign); text rule extended to the one real signboard; real reference photo + entrance replica; transition 1→2 = photo-to-3D dissolve. Earlier the same day: lens rule added (24/35/50 standard; 18 wide, 85/100 close-up; nothing outside 18–100 mm) — enforced in `_common.set_lens()` |
 | Production plan | review | Open questions Q1–Q4 in `docs/production-plan.md` |
 | Storyboard | review | |
 | Initial git commit | blocked | Git user.name / user.email still not found in any git config (re-checked after the skeleton step) |
@@ -20,9 +20,11 @@ States: **not started** · **in progress** · **review** · **approved**
 | — | Design language | approved | **A — Warm modern**, fixed (`docs/design-language.md`) |
 | — | Shared kit `blender/kit/school_kit.blend` (`build_kit.py`) v2 | **approved** (2026-11-26, step 3) | style A only; real lights under every fixture; school desk/chair/monitor/LED accent; exterior backdrop + HDRI; irradiance-volume bake; renders `renders/_kit/v2/`. v2 review notes recorded in `docs/design-language.md` and applied to the kit: lacquered floor gloss, `tech_dark` exposure 0.4 → 0.7 + brighter neutral fill, backdrop trees with leaf clusters + leaf cards, backdrop buildings with recessed framed windows and three plaster tones. `outdoor_day` now uses a procedural physical sky (no HDRI trees in the sky) synced to the sun lamp |
 | — | Floor slab `PIECE_slab` (`kit_slab.py`) | review | 6 × 6 m, 1.2 m thick: concrete decks, sealed 0.9 m cavity with ribs, 2 cable trays + cables, round duct, 4000 K LED strips (own light, not preset-driven); `slab_HANDOFF` at −0.61. Test `kit_slab_test.py`: cut frame renders **identically (0/255 diff)** under `day_interior` and `tech_dark` when scenes use `C.key_slab_isolation()` (EEVEE leaks world light into the cavity otherwise: +24 %). Renders `renders/_kit/slab/` |
-| — | School building exterior `PIECE_school_building` + `PIECE_school_grounds` (`kit_building.py`) | **review — awaiting your approval** | `renders/_kit/exterior/school_exterior_v1.png` (960×540, 64 samples, 28.7 s). Neutral choices (3 storeys, flat roof, warm white render, teal entrance portal) — not real details of the school. Scene 1 hero image + scene 6 background |
-| 1 | Website | 0–269 | not started | |
-| 2 | Turnstile with Face ID | 270–449 | not started | abstract dot-lattice scan UI only |
+| — | School building exterior `PIECE_school_building` + `PIECE_school_grounds` (`kit_building.py`) | **superseded** (2026-11-26) | Replaced by the real entrance reference for the hero image and the entrance. Not to be used unless you decide it may appear elsewhere (open question: what is seen of the school in the stadium background, scene 6). Code kept; its tree generator is reused |
+| — | Website hero image — real entrance photo, sky replaced (`tools/hero_sky.py`) | **review — awaiting your approval** | Source `assets/reference/entrance_front.jpg` (no newer unprocessed photo in `assets/reference/`). Lanczos upscale 1280 → 1920 px (no AI, no invented detail — the source is only 1280 px, so fine detail stays soft at 1920). Colour-unmixing matte (roof edges, canopy tubes + cables, pipes, antenna, tree, street light); procedural clear morning sky with a few soft clouds; slight spill/cool grade. **Signboard bit-identical to the upscaled original (max diff 0)**; buildings, gate, booth unchanged except the grade. Review images `renders/_hero/before_960.png`, `after_960.png`, `before_after_960.png`; master `renders/_hero/entrance_hero_1920.png`; matte `entrance_matte_1920.png`. Not yet used in the website (waits for approval) |
+| — | 3D entrance replica `blender/kit/entrance.blend` (`build_entrance.py`) | **review — awaiting your approval** | Photo-matched: every element back-projected from measured photo pixels through the solved camera (f ≈ 545 px = 15.3 mm, principal point (681, 478), level, height 1.40 m ASSUMED → facade 8.48 m). Renders `renders/_entrance/entrance_match_960.png` (photo frame), `entrance_s02_start_960.png` (film start, 18 mm), overlay `overlay_50_960.png` + `overlay_edges_960.png`. Sign text from `common/brand.py` in Montserrat Bold (no glow halo yet). Invented (not visible in the photo, neutral): building depths/roofs behind the visible faces, courtyard layout beyond the gate, gate-pattern exact motif, booth interior |
+| 1 | Website | 0–269 | not started | hero image = real entrance photo (see above); exit = D push-in into the photo |
+| 2 | Turnstile with Face ID | 270–449 | not started | starts on the 3D entrance replica (D dissolve), through the gate to the turnstile; abstract dot-lattice scan UI only. Timing note: the entrance approach now shares 6 s with the Face ID scan — may need frames from another scene (your decision when scene 2 is boarded) |
 | 3 | CCTV | 450–599 | not started | depends on Q3 |
 | 4 | English class | 600–809 | not started | |
 | 5 | Russian class | 810–989 | not started | |
@@ -40,13 +42,18 @@ States: **not started** · **in progress** · **review** · **approved**
 | Asset | State |
 |---|---|
 | Official logo (`assets/brand/`) | does not exist yet — not blocking (wordmark only) |
-| Wordmark font with native ʻ U+02BB + commercial licence (`assets/fonts/`) | not chosen — glyph check pending |
-| Reference photos | not needed — all spaces designed in Blender |
+| Fonts | **Montserrat Bold** (SIL OFL 1.1, licence `assets/fonts/OFL-Montserrat.txt`) used for the signboard replica. Glyph check (fontTools cmap, 2026-11-26): A B D G I K M O S T U X Y Z, ’ U+2019, “ U+201C, ” U+201D — **all present natively, none missing**. Wordmark font for scenes 1/11: still to choose (Montserrat qualifies) |
+| Reference photos | `assets/reference/entrance_front.jpg` (real entrance, 2026-11-26). More photos welcome (other sides, courtyard, turnstile area) |
 | Design-language choice | done — A (Warm modern) |
-| Real building details (colour, floors, roof, main colours) | none provided yet (optional) |
+| Real building details | from the entrance photo — recorded in CLAUDE.md → DESIGN LANGUAGE. A real dimension (gate height or pillar width) would fix the camera-solve scale |
 | Licensed instrumental music (`assets/audio/music/`) | missing |
 | Facility confirmation | missing |
 
 ## Placeholders in use
 
 None yet. Every placeholder will be listed here (magenta "PLACEHOLDER" label in frame).
+
+## Tools
+
+- `tools/py.sh` runs Blender's bundled Python with project-local Pillow / SciPy / fontTools from `tools/pydeps/` (git-ignored). Setup once: `"<Blender>/5.3/python/bin/python.exe" -m pip install --target tools/pydeps pillow scipy fonttools`.
+- `tools/hero_sky.py` (hero sky replacement), `tools/gate_pattern.py` (laser-cut pattern masks → `assets/textures/`), `tools/overlay_match.py` (camera-match overlay).

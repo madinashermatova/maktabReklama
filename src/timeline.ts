@@ -1,4 +1,4 @@
-// Single source of truth for all timings of the ZIYO YOGʻDUSI commercial.
+// Single source of truth for all timings of the ZIYO YOG’DUSI commercial.
 // Every other file (Remotion and, via blender/timeline.json, Blender) reads frame ranges from here.
 // After changing anything here run `npm run timeline:export` (done automatically by the npm scripts).
 //

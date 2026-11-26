@@ -1,4 +1,4 @@
-# Production plan — ZIYO YOGʻDUSI commercial
+# Production plan — ZIYO YOG’DUSI commercial
 
 75 s · 30 fps · 2250 frames (0–2249) · EEVEE · preview 960×540 @ ~16 samples · final 1920×1080.
 Rules: see `CLAUDE.md`. Shot-level detail: `docs/storyboard.md`. Progress: `docs/status.md`.
@@ -9,8 +9,8 @@ Frame ranges are inclusive. The starting timeline is kept unchanged — no reaso
 
 | # | Name | Start | End | Frames | Seconds | Technique | Main risk | Fallback |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Website | 0 | 269 | 270 | 9.0 | Mixed: Remotion renders the invented website UI as a frame sequence → used as screen texture on a Blender monitor; code-melt liquid in Blender | Code-melt liquid looks fake or is too heavy | 2D gooey-drip melt in Remotion (SVG/blur-threshold filter) over the Blender plate |
-| 2 | Turnstile with Face ID | 270 | 449 | 180 | 6.0 | Mixed: Blender hall + terminal + glass-wing turnstiles; scan UI (abstract dot/mesh lattice, scan line, dots lighting in sequence) made in Remotion as a screen texture | The scan graphic reads as a face, or the action is unclear without people | Flat square dot lattice with no face-like features; simplify to scan line + green state + gate opening |
+| 1 | Website | 0 | 269 | 270 | 9.0 | Mixed: Remotion renders the invented website UI (hero image = the real entrance photo, sky replaced) as a frame sequence → used as screen texture on a Blender monitor; code-melt liquid in Blender | Code-melt liquid looks fake or is too heavy | 2D gooey-drip melt in Remotion (SVG/blur-threshold filter) over the Blender plate |
+| 2 | Turnstile with Face ID | 270 | 449 | 180 | 6.0 | Mixed: opens on the 3D replica of the real entrance (`blender/kit/entrance.blend`, photo-matched), through the gate; Blender hall + terminal + glass-wing turnstiles; scan UI (abstract dot/mesh lattice, scan line, dots lighting in sequence) made in Remotion as a screen texture | The scan graphic reads as a face, or the action is unclear without people | Flat square dot lattice with no face-like features; simplify to scan line + green state + gate opening |
 | 3 | CCTV | 450 | 599 | 150 | 5.0 | Mixed: Blender security-room set + monitor wall; feeds are low-res re-renders of other scene sets; Remotion adds generic CCTV overlay (REC dot, grid, camera IDs) | Rendering extra feed angles costs time; feeds must not look like real CCTV branding | Feeds use stills from other scenes with slow Remotion pans |
 | 4 | English class | 600 | 809 | 210 | 7.0 | Blender | Empty classroom feels lifeless | Motion through objects: books unfold, letters on board assemble, globe rotates, curtain cloth breathes |
 | 5 | Russian class | 810 | 989 | 180 | 6.0 | Blender (shares classroom kit with 4, different dressing) | Looks like a copy of scene 4 | Different camera path, colour accent, props (Cyrillic alphabet chart, literature books) |
@@ -19,7 +19,7 @@ Frame ranges are inclusive. The starting timeline is kept unchanged — no reaso
 | 8 | Cafeteria — plov | 1470 | 1709 | 240 | 8.0 | Blender | Plov (rice grains, steam) hard to make appetising | Shader-based rice mound with displacement + a few GN grains on top; steam as animated volume, fallback alpha cards |
 | 9 | Dormitory | 1710 | 1919 | 210 | 7.0 | Blender | Cloth blanket sim instability | Shape-key / lattice animated blanket |
 | 10 | Rewind | 1920 | 2069 | 150 | 5.0 | Remotion, reusing rendered frames of scenes 1–9 | Conflicts with "camera always travels down" (see open question Q1) | Simple accelerating montage (no reversed motion) |
-| 11 | Brand reveal | 2070 | 2249 | 180 | 6.0 | Mixed: Blender light/background plate + typographic wordmark `ZIYO YOGʻDUSI` composited in Remotion; optional logo slot (`src/brand.ts`, empty for now) | Font without native ʻ (U+02BB) glyph or without commercial licence | Choose another OFL font that passes the glyph check; never fall back to a substitute glyph |
+| 11 | Brand reveal | 2070 | 2249 | 180 | 6.0 | Mixed: Blender light/background plate + typographic wordmark `ZIYO YOG’DUSI` composited in Remotion; optional logo slot (`src/brand.ts`, empty for now) | Font without native ’ (U+2019) glyph or without commercial licence | Choose another OFL font that passes the glyph check; never fall back to a substitute glyph |
 
 Total 2250 frames ✔. Blender-rendered frames: scenes 1–9 + 11 ≈ **2100 frames**; scene 10 is pure Remotion.
 
@@ -29,7 +29,7 @@ Each scene lives in its own `.blend` around its own origin. The camera always tr
 
 | Cut | Type |
 |---|---|
-| 1 → 2 | G — Screen-glass pass (monitor subpixels → Face ID display) |
+| 1 → 2 | D — Photo-to-3D dissolve (real entrance photo on the website → 3D replica, through the gate to the turnstile) |
 | 2 → 3 | S — Floor slab |
 | 3 → 4 | F — CCTV feed match |
 | 4 → 5 | S — Floor slab |
@@ -61,7 +61,7 @@ Exact EXIT/ENTRY values for each type are in `docs/storyboard.md` → "Transitio
 ### Other risks
 - **Grass (scene 6):** GN instanced blades in a camera-frustum mask (~150k blades near camera), mown-stripe colour variation; distant field is a textured plane with normal map.
 - **Reflections / glass:** EEVEE raytracing on; screen-space fallback for previews.
-- **Continuity cuts:** every transition type (S, G, F, W, H) has exact EXIT/ENTRY values; camera keyframes on both sides are generated from one shared Python module (`blender/scripts/common/camera_handoff.py`). The G pass needs an identical subpixel texture on both screens; the W pass needs the same HDRI and exposure on both sides; the H pass needs matched luminance and tint (checked by sampling the two frames).
+- **Continuity cuts:** every transition type (S, D, F, W, H) has exact EXIT/ENTRY values; camera keyframes on both sides are generated from one shared Python module (`blender/scripts/common/camera_handoff.py`). The D dissolve needs the 3D replica to overlay the photo (camera solve + overlay check, `tools/overlay_match.py`); the W pass needs the same HDRI and exposure on both sides; the H pass needs matched luminance and tint (checked by sampling the two frames).
 
 ## 3. Render budget
 
@@ -81,7 +81,7 @@ Benchmark (audit, simple 4-object scene, 1080p, EEVEE default samples): **14.1 s
 
 ## 4. Assets
 
-There are **no reference photos**. Every space — building exterior, entrance, corridors, classrooms, cafeteria, sports ground, dormitory — is designed and generated in Blender.
+**Reference photo:** `assets/reference/entrance_front.jpg` (the real entrance, 2026-11-26) — hero image of scene 1 (sky replaced only) and the reference for the 3D entrance replica. Every other space (corridors, classrooms, cafeteria, sports ground, dormitory) has no photo and is designed in Blender.
 
 ### Design language — CHOSEN: A "Warm modern" (fixed for the whole film)
 - Warm white walls, light oak floors/doors, teal accent, amber small accents, graphite frames, white ceiling. Full spec: `docs/design-language.md`. B and C were rejected and removed from the kit.
@@ -114,12 +114,13 @@ There are **no reference photos**. Every space — building exterior, entrance, 
 3. Website UI language (see Q2).
 4. Optional: real details of the building (colour, floors, roof shape, main colours) — used if given.
 
-Not needed: reference photos (all spaces are designed in Blender).
+Welcome: more photos of the school (other sides of the entrance, courtyard, turnstile area) — they replace invented detail.
 
-**Not blocking:** an official logo does not exist yet. The brand is the wordmark `ZIYO YOGʻDUSI`; if a logo is made later, drop it into `assets/brand/` and set `logoFile` in `src/brand.ts` (see CLAUDE.md → BRAND).
+**Not blocking:** an official logo does not exist yet. The brand is the wordmark `ZIYO YOG’DUSI`; if a logo is made later, drop it into `assets/brand/` and set `logoFile` in `src/brand.ts` (see CLAUDE.md → BRAND).
 
 ### Fonts (wordmark)
-- Candidate typefaces must be commercially licensed (e.g. SIL OFL) and contain **U+02BB natively** — verified with a fontTools `cmap` check before use; results recorded in `docs/status.md`. Fonts and licence files go in `assets/fonts/`.
+- Candidate typefaces must be commercially licensed (e.g. SIL OFL) and contain **U+2019 (and U+201C/U+201D for the signboard) natively** — verified with a fontTools `cmap` check before use; results recorded in `docs/status.md`. Fonts and licence files go in `assets/fonts/`.
+- In use: **Montserrat Bold** (SIL OFL 1.1, `assets/fonts/Montserrat-Bold.ttf` + `OFL-Montserrat.txt`) for the 3D signboard replica — closest open geometric sans to the real sign lettering. The scene 1/11 wordmark font is still to be chosen (Montserrat passes the glyph check and is a candidate).
 
 ## 5. Open questions (need your decision)
 

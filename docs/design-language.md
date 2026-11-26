@@ -1,4 +1,4 @@
-# Design language — ZIYO YOGʻDUSI
+# Design language — ZIYO YOG’DUSI
 
 > **Status: CHOSEN — option A "Warm modern" (user decision, 2026-11-25). Fixed for the whole film.**
 > There are no reference photos; every space is designed in Blender. The kit (`blender/scripts/build_kit.py`) builds only this style. Options B (clean white-and-glass) and C (bold contemporary) were rejected and removed from the kit.
@@ -67,3 +67,7 @@ Kit v2 (`renders/_kit/v2/`) is approved as the design language. These notes are 
 4. **`tech_dark`:** exposure slightly higher plus a soft neutral fill, so the floor and desks stay readable; screens and LED strips provide the accent colour.
 
 Every visible fixture that looks lit has a real light under it (spot / area), so walls show falloff and the floor shows soft pools. Interiors bake an irradiance volume per scene/preset for occlusion-aware bounce light.
+
+## Real entrance (replica, not design language A)
+
+The entrance is reproduced from `assets/reference/entrance_front.jpg` — see CLAUDE.md → DESIGN LANGUAGE for the recorded real details and `blender/scripts/build_entrance.py` for materials (dark grey grooved pillars `#45484D` with light inlays, sign board `#1C232C` with warm yellow letters, graphite laser-cut gate, booth `#55585D`, cream left building `#E0D3B6` with brown roof edge `#6A4631`, light grey right building `#D3D5D7` with grey plinth `#80848A`, grey/white checker paving 0.24 m). Interiors keep design language A; where the two meet (scene 2 entrance hall), real details win and A fills the rest.

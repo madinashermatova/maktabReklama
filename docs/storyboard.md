@@ -1,4 +1,4 @@
-# Storyboard — ZIYO YOGʻDUSI commercial
+# Storyboard — ZIYO YOG’DUSI commercial
 
 30 fps · frames are absolute film frames (0–2249). No people, no voice, no subtitles.
 Lens values are full-frame equivalent (36 mm sensor). "KF" = key frame.
@@ -12,7 +12,7 @@ The floor-slab pass is the default; six transition types are used in total. Ever
 
 | Cut | Frame (exit → entry) | Type | Motivation |
 |---|---|---|---|
-| 1 → 2 | 269 → 270 | **G — Screen-glass pass** | Camera dives through the monitor glass into its pixel grid and emerges through the glass of the Face ID terminal display |
+| 1 → 2 | 269 → 270 | **D — Photo-to-3D dissolve** (user decision 2026-11-26) | The camera pushes into the real entrance photo on the website; the photo dissolves into the 3D replica seen from the solved photo camera; the camera then moves through the gate toward the turnstile |
 | 2 → 3 | 449 → 450 | **S — Floor-slab pass** (default) | — |
 | 3 → 4 | 599 → 600 | **F — CCTV feed match** | Camera pushes into a CCTV feed showing the English classroom from a high angle; the feed becomes the real 3D room |
 | 4 → 5 | 809 → 810 | **S — Floor-slab pass** | — |
@@ -35,14 +35,23 @@ Shared slab kit piece `PIECE_slab` in `blender/kit/school_kit.blend` (1.2 m thic
 | Light | slab interior only: warm-white LED strips 4000 K. Both scene files call `C.key_slab_isolation(first, last)` for the frames the camera is inside the slab (world strength 0, exposure `SLAB_EXPOSURE`, switched while the camera is inside a solid deck) — verified identical cut frame under different presets (`kit_slab_test.py`) |
 | Kit | `PIECE_slab` (`blender/scripts/kit_slab.py`); anchor = `C.slab_handoff_matrix(instance)`; probes = `C.add_slab_probe(instance)` |
 
-### G — Screen-glass pass (1 → 2)
-| Property | EXIT 269 | ENTRY 270 |
+### D — Photo-to-3D dissolve (1 → 2) — replaces the former G screen-glass pass (user decision 2026-11-26)
+Reference: `assets/reference/entrance_front.jpg` (the real entrance). Hero image: `tools/hero_sky.py` (sky replaced only).
+
+**Camera solve of the photo** (`blender/scripts/build_entrance.py`, values stored in `entrance.blend` → scene `photo_solve`):
+| Quantity | Value | How |
 |---|---|---|
-| Frame content | macro of the monitor's RGB subpixel grid, emissive, filling the frame | the same subpixel grid (identical texture and scale) on the Face ID terminal display |
-| Rotation | looking along the screen normal, tilted 30° downward (screen leans back) | the terminal display also leans back 30°, so the camera continues forward-and-down |
-| Focal length | 50 mm, DOF off | 50 mm |
-| Motion | forward-and-down 0.03 m/frame, constant ±6 frames | same |
-| Light | subpixels emit cool 6500 K white | same |
+| Orientation | level (verticals vertical), facade parallel to the image (yaw < 1°) | vertical edges; signboard top edge slope 0.005 |
+| Principal point = street vanishing point | (681, 478) px of 1280 × 720 → lens shift x −0.032, y +0.092 | least-squares of left/right roof edges, right plinth, wall cable (spread ±10 px). 478 ≈ the centre of a 4:3 frame cropped to 16:9 |
+| Focal length | f ≈ 545 px ±10 % → **15.3 mm** on a 36 mm sensor (an ultra-wide phone lens) | square checker paving: f = (y − y_h) · column period / row period |
+| Camera height / distance | **1.40 m**, entrance facade at **8.48 m** — ASSUMED scale | booth door ≈ 2.2 m, paving tile ≈ 0.24 m; replace with one real measurement (gate height or pillar width) when available |
+
+| Property | EXIT 269 (scene 1, Remotion/website) | ENTRY 270 (scene 2, Blender) |
+|---|---|---|
+| Frame content | the hero photo fills the frame, pushed in **1.174×** around its centre | the 3D replica from `CAM_S02_START` — same framing; the photo cross-dissolves to the render over 270–285 |
+| Camera | (2D push-in) | position (0, 0, 1.40), looking +Y, level; **18 mm** = 15.33 mm × 1.174, shifts × 1.174 (lens rule: never wider than 18 mm in the film; the 15.3 mm `CAM_PHOTO_MATCH` is a measurement camera only) |
+| Motion | push-in eases to a constant 1.0 %/frame scale rate ±6 frames | forward (+Y) 0.03 m/frame, matching the apparent push-in, then eases on through the open gate |
+| Light | photo with the replaced morning sky | `W_entrance_morning` sky + sun 5400 K from the right (34°), same look as the hero sky |
 
 ### F — CCTV feed match (3 → 4)
 | Property | EXIT 599 | ENTRY 600 |
@@ -72,17 +81,17 @@ Defined in scenes 10 and 11.
 ## Scene 1 — Website (0–269, 9.0 s)
 
 **ENTRY:** film start. Black → fade up from frame 0–12.
-**EXIT:** G at frame 269 (into the monitor's subpixel grid).
+**EXIT:** D at frame 269 — the website hero (the real entrance photo, sky replaced) fills the frame, pushed in 1.174× around its centre.
 
-The website header shows the wordmark **ZIYO YOGʻDUSI** (U+02BB, same verified font as scene 11), with no symbol or icon. An optional logo slot left of the wordmark stays empty while `logoFile` is `null`.
+The website header shows the wordmark **ZIYO YOG’DUSI** (U+2019, same verified font as scene 11), with no symbol or icon. An optional logo slot left of the wordmark stays empty while `logoFile` is `null`.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 1a | 0 | Dark, calm study desk; a slim unbranded monitor, the screen glowing with the invented school website hero page | Front, eye level, 50 mm, slow dolly in; shallow DOF (f/2.8) on the screen | Moody: the screen is the key light (cool 6500 K), faint warm practical lamp behind | Fade up; the website hero shows a rendered image of the school building exterior (from the Blender kit) with a slow parallax |
+| 1a | 0 | Dark, calm study desk; a slim unbranded monitor, the screen glowing with the invented school website hero page (hero image = the REAL entrance photo with the sky replaced, never a render) | Front, eye level, 50 mm, slow dolly in; shallow DOF (f/2.8) on the screen | Moody: the screen is the key light (cool 6500 K), faint warm practical lamp behind | Fade up; the website hero shows a rendered image of the school building exterior (from the Blender kit) with a slow parallax |
 | 1b | 75 | Screen fills ~70 % of the frame; cursor (no hand) glides over menu items, opens an "Admissions"-type page — generic labels, no numbers or claims | 50 → 65 mm push-in | Same | Smooth UI scroll, buttons respond |
 | 1c | 140 | The page flips into its source-code view: lines of code scroll | 85 mm, close on the screen | Screen shifts cyan → warm amber | Code lines start to glow hot |
 | 1d | 190 | Code lines detach from the glass and melt into thick glossy amber liquid, flowing down the screen and over the bezel | 50 mm, slight tilt down | Liquid slightly emissive, lights the desk | Liquid drips with weight (accelerating fall, stretching, bead-off) |
-| 1e | 235–269 | As the liquid drains, the screen behind it glows clean white; the camera pushes forward-and-down into the glass until the RGB subpixel grid fills the frame | 50 mm, DOF off by 255 | The screen is the only light | Ease into G speed |
+| 1e | 235–269 | As the liquid drains, the website hero photo of the real entrance is revealed clean behind it; the camera pushes into the screen until the photo fills the frame (pushed in 1.174× at 269) | 50 mm on the monitor, then a 2D push-in on the photo | The photo’s morning light | Ease into the D push-in rate |
 
 **Sound cues**
 - 0 — music start (soft intro)
@@ -91,20 +100,20 @@ The website header shows the wordmark **ZIYO YOGʻDUSI** (U+02BB, same verified 
 - 140 — digital "code reveal" shimmer
 - 190 — low sizzle/hum as the code heats; liquid stretch
 - 215, 228, 241 — three thick liquid drip "plops" (sync to drip contacts)
-- 250–269 — rising electric "glass dive" whoosh
+- 250–269 — soft rising whoosh as the camera pushes into the entrance photo
 
 ---
 
 ## Scene 2 — Turnstile with Face ID (270–449, 6.0 s)
 
-**ENTRY:** G at 270 (out of the Face ID terminal display glass).
+**ENTRY:** D at 270 — the photo (pushed in 1.174×) dissolves into the 3D entrance replica rendered from `CAM_S02_START` (18 mm, `blender/kit/entrance.blend`).
 **EXIT:** S at 449.
 
 **Face ID UI rule:** the terminal display shows only an abstract **dot/mesh grid** — a rounded-square lattice of points (about 20 × 20) joined by thin triangulated lines, gently undulating like a surface. There is **no face, head, silhouette or body shape**: no oval outline, no eyes, nose, mouth or shoulders. No text on the scan UI (colour and generic glyphs only).
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 2a | 270 | Emerging from the terminal display: the subpixel grid widens into the scan UI — the abstract dot lattice in dim blue | 50 mm, moving forward-and-down through the glass, then easing back to a steady position in front of the terminal | Display glow, cool 6500 K | Ease out of G speed |
+| 2a | 270–300 | The photo dissolves (270–285) into the 3D replica of the real entrance: signboard “ZIYO YOG’DUSI” XUSUSIY MAKTABI, grooved pillars, laser-cut gate, guard booth, canopy frame; the camera moves forward and the gate leaves open (slide/swing, no people) | 18 mm from `CAM_S02_START`, dolly forward through the gate, lens eases 18 → 24 → 35 mm | Morning sun from the right, natural sky | Smooth push; gate leaves accelerate and settle |
 | 2b | 300 | The full Face ID terminal on its stand beside a row of modern glass-wing turnstiles in a bright entrance hall | 35 mm, camera descends and arcs 20° around the terminal | Morning daylight through tall windows (5600 K), soft shadows | Slow arc |
 | 2c | 325–355 | Scan: a horizontal scan line sweeps the lattice top → bottom; dots light up in sequence (blue → white) as the line passes; mesh lines brighten | 85 mm, close on the display, shallow DOF | Display + daylight | Sweep with ease-in-out; dots light in a wave |
 | 2d | 360 | All dots settle to green; a generic check glyph fades in at the centre of the lattice | 85 mm | Display turns green; green spill on the terminal bezel | Green pulse |
@@ -112,7 +121,7 @@ The website header shows the wordmark **ZIYO YOGʻDUSI** (U+02BB, same verified 
 | 2f | 425–449 | Past the gate, camera tilts down to the polished floor; floor seam → slab | → 24 mm, top-down, S | Daylight fades into slab LEDs | Ease into S |
 
 **Sound cues**
-- 270 — glass-dive whoosh tail
+- 270 — whoosh tail as the photo dissolves into 3D; ~290 — gate leaves open (soft metal glide + latch)
 - 325 — soft scanning hum (sweep 325–355)
 - 340–355 — tiny digital ticks as the dots light (subtle, in groups)
 - 360 — two-tone confirmation beep (existing draft SFX, to be regenerated into `assets/audio/sfx/`)
@@ -314,7 +323,7 @@ Built as a Blender light/background plate + the wordmark composited in Remotion.
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
 | 11a | 2070 | Point of light on a deep dark background | 50 mm, locked | Single warm light | The light blooms into a soft horizontal glow |
-| 11b | 2100 | The wordmark **ZIYO YOGʻDUSI** (U+02BB, font verified) resolves out of the glow, letters stepping in left → right | Locked, very slow push-in (scale 1.00 → 1.03) | Warm key + soft rim | Per-letter opacity/tracking ease-in, no bounce |
+| 11b | 2100 | The wordmark **ZIYO YOG’DUSI** (U+2019, font verified) resolves out of the glow, letters stepping in left → right | Locked, very slow push-in (scale 1.00 → 1.03) | Warm key + soft rim | Per-letter opacity/tracking ease-in, no bounce |
 | 11c | 2150 | Full wordmark; a light sweep passes across the letters | Locked | Light sweep | Sweep ease-in-out |
 | 11d | 2200 | Hold | Locked | — | Still |
 | 11e | 2235–2249 | Fade to black | — | — | — |

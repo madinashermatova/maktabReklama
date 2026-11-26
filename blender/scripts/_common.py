@@ -445,7 +445,7 @@ def follow_path(rig, points, start: int, end: int, name: str = "RIG_PATH") -> bp
 #: direction: "DOWN" = world −Z with the camera looking straight down; "VIEW" = along the anchor's view (−Z axis).
 HANDOFF_TYPES = {
     "S": dict(lens=24.0, speed=0.12, direction="DOWN"),  # floor-slab pass (default)
-    "G": dict(lens=50.0, speed=0.03, direction="VIEW"),  # screen-glass pass
+    "D": dict(lens=18.0, speed=0.03, direction="VIEW"),  # photo-to-3D dissolve 1→2 (anchor = CAM_S02_START in kit/entrance.blend)
     "F": dict(lens=18.0, speed=0.02, direction="VIEW"),  # CCTV feed match (special lens)
     "W56": dict(lens=35.0, speed=0.10, direction="VIEW"),  # window / sky pass 5→6
     "W67": dict(lens=35.0, speed=0.05, direction="VIEW"),  # facade window pass 6→7
@@ -454,7 +454,7 @@ HANDOFF_TYPES = {
 
 #: (exit scene, entry scene) → hand-off type. Scenes 10 and 11 are Remotion-side (P, L).
 TRANSITIONS = {
-    ("s01_website", "s02_turnstile"): "G",
+    ("s01_website", "s02_turnstile"): "D",
     ("s02_turnstile", "s03_cctv"): "S",
     ("s03_cctv", "s04_english"): "F",
     ("s04_english", "s05_russian"): "S",
