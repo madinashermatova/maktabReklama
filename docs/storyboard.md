@@ -1,6 +1,7 @@
 # Storyboard — ZIYO YOG’DUSI commercial
 
 30 fps · frames are absolute film frames (0–2249). No people, no voice, no subtitles.
+One school day, morning (scene 2) to evening (scene 9); every room has its own atmosphere and camera language (`docs/design-language.md` → Room atmospheres, binding). CCTV cameras only in scene 3 (exception: the real camera in the entrance photo / replica).
 Lens values are full-frame equivalent (36 mm sensor). "KF" = key frame.
 Sound cues listed here are copied into `docs/sound-cues.md` once frames are locked; all SFX are made with ElevenLabs `text_to_sound_effects` into `assets/audio/sfx/`. Music: your licensed instrumental track (`assets/audio/music/`), edited to hit the marked accents.
 
@@ -14,7 +15,7 @@ The floor-slab pass is the default; six transition types are used in total. Ever
 |---|---|---|---|
 | 1 → 2 | 269 → 270 | **D — Photo-to-3D dissolve** (user decision 2026-11-26) | The camera pushes into the real entrance photo on the website; the photo dissolves into the 3D replica seen from the solved photo camera; the camera then moves through the gate toward the turnstile |
 | 2 → 3 | 449 → 450 | **S — Floor-slab pass** (default) | — |
-| 3 → 4 | 599 → 600 | **F — CCTV feed match** | Camera pushes into a CCTV feed showing the English classroom from a high angle; the feed becomes the real 3D room |
+| 3 → 4 | 599 → 600 | **C — Lens pass** (user decision 2026-11-26, replaces F) | The corridor dome camera turns to face us; the camera pushes forward-and-down into its coated lens; inside the lens the frame goes dark, and scene 4 opens from that darkness onto the English class from a high corner — no camera in the classroom, no CCTV look (rule: CCTV only in scene 3) |
 | 4 → 5 | 809 → 810 | **S — Floor-slab pass** | — |
 | 5 → 6 | 989 → 990 | **W — Window / sky pass** | Camera passes through the classroom window; the bright sky fills the frame; the cut is on matched sky; descent toward the stadium |
 | 6 → 7 | 1229 → 1230 | **W — Window pass (facade)** | Camera descends along the school's glazed facade beside the field and passes through a window into the IT class |
@@ -53,13 +54,14 @@ Reference: `assets/reference/entrance_front.jpg` (the real entrance). Hero image
 | Motion | push-in eases to a constant 1.0 %/frame scale rate ±6 frames | forward (+Y) 0.03 m/frame, matching the apparent push-in, then eases on through the open gate |
 | Light | photo with the replaced morning sky | `W_entrance_morning` sky + sun 5400 K from the right (34°), same look as the hero sky |
 
-### F — CCTV feed match (3 → 4)
-| Property | EXIT 599 | ENTRY 600 |
+### C — Lens pass (3 → 4) — replaces the former F feed match (user decision 2026-11-26)
+| Property | EXIT 599 (scene 3) | ENTRY 600 (scene 4) |
 |---|---|---|
-| Frame content | the CCTV feed (rendered from the English-class set) fills the frame; overlay fully faded out by 595 | the 3D English classroom from the same CCTV angle |
-| Camera | the feed's virtual CCTV camera: ceiling corner, 2.8 m height, looking down 35°, 18 mm | identical |
-| Motion | descending + forward 0.02 m/frame | same; the "feed" look (slight barrel distortion and grade) dissolves to the clean film look over 600–615 |
-| Light | English class daylight 5200 K | same |
+| Frame content | inside the dome camera's lens: camera 12 mm behind the coated front element, looking down the barrel — near-black, faint green/purple coating ring | the same near-black frame (matched luminance, faint neutral glint); over 600–615 the darkness opens like an iris onto the sunlit English classroom from a high corner — a purely cinematic reveal: no camera object in the room, no CCTV look |
+| Camera | 35 mm, looking along the lens axis (forward and 2.3° down), anchor `EXIT_ANCHOR_C` in `s03_cctv.blend` | 35 mm, high corner of the classroom, same forward-and-down direction |
+| Motion | forward-and-down 0.01 m/frame, constant ±6 frames (`C.HANDOFF_TYPES["C"]`) | same, then the crane down into the room |
+| Light | none inside the lens (EEVEE: only reflections) | dark → English-class daylight 5200 K |
+| Note | CCTV cameras appear only in scene 3 (user, 2026-11-26) — scene 4 shows none | |
 
 ### W — Window / sky pass (5 → 6, 6 → 7)
 - **5 → 6:** EXIT 989: the camera has passed through the open classroom window; the frame is filled by bright sky (the same HDRI as scene 6, overexposed +1.5 EV at the cut), looking 45° down, 35 mm, moving forward-and-down 0.10 m/frame. ENTRY 990: the same sky and exposure; exposure eases back to 0 EV over 990–1010, revealing the stadium below.
@@ -103,13 +105,14 @@ Website strip (`blender/kit/textures/website_strip.png`, made by `npm run websit
 
 **ENTRY:** D at 270 — the photo (pushed in 1.174×) dissolves into the 3D entrance replica rendered from `CAM_S02_START` (18 mm, `blender/kit/entrance.blend`).
 **EXIT:** S at 449.
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): early morning · cool early-morning daylight (≈ 6000–6500 K), steel and glass, crisp and precise · camera language: **precise axial moves** (straight symmetric dolly on the centre line, exact stops) · mood: security. The exterior keeps the approved photo-matched replica light (the photo wins); the cool morning look starts at the hall.
 
 **Face ID UI rule:** the terminal display shows only an abstract **dot/mesh grid** — a rounded-square lattice of points (about 20 × 20) joined by thin triangulated lines, gently undulating like a surface. There is **no face, head, silhouette or body shape**: no oval outline, no eyes, nose, mouth or shoulders. No text on the scan UI (colour and generic glyphs only).
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
 | 2a | 270–300 | The photo dissolves (270–285) into the 3D replica of the real entrance: signboard “ZIYO YOG’DUSI” XUSUSIY MAKTABI, grooved pillars, laser-cut gate, guard booth, canopy frame; the camera moves forward and the gate leaves open (slide/swing, no people) | 18 mm from `CAM_S02_START`, dolly forward through the gate, lens eases 18 → 24 → 35 mm | Morning sun from the right, natural sky | Smooth push; gate leaves accelerate and settle |
-| 2b | 300 | The full Face ID terminal on its stand beside a row of modern glass-wing turnstiles in a bright entrance hall | 35 mm, camera descends and arcs 20° around the terminal | Morning daylight through tall windows (5600 K), soft shadows | Slow arc |
+| 2b | 300 | The full Face ID terminal on its stand beside a row of modern glass-wing turnstiles in a bright entrance hall | 35 mm, camera descends on the centre line and pushes straight at the terminal (symmetric framing) | Cool early-morning daylight through tall windows (≈ 6200 K), crisp shadows; steel and glass | Precise axial dolly, exact eased stop |
 | 2c | 325–355 | Scan: a horizontal scan line sweeps the lattice top → bottom; dots light up in sequence (blue → white) as the line passes; mesh lines brighten | 85 mm, close on the display, shallow DOF | Display + daylight | Sweep with ease-in-out; dots light in a wave |
 | 2d | 360 | All dots settle to green; a generic check glyph fades in at the centre of the lattice | 85 mm | Display turns green; green spill on the terminal bezel | Green pulse |
 | 2e | 370–420 | Glass wings open smoothly (rotate into place); the path ahead is clear | 35 mm, camera dollies through the opened gate | Daylight | Wings: accelerate, decelerate, tiny settle overshoot |
@@ -126,36 +129,37 @@ Website strip (`blender/kit/textures/website_strip.png`, made by `npm run websit
 
 ---
 
-## Scene 3 — CCTV (450–599, 5.0 s)
+## Scene 3 — CCTV security (450–599, 5.0 s)
 
-**ENTRY:** S at 450 (security room ceiling).
-**EXIT:** F at 599 (into the English-class feed).
+Concept (user decisions 2026-11-26, replace the former security-room board): a school corridor from the kit; three real surveillance cameras slide out, pan, then lock onto a soft glowing light point (no people); the wall security monitor shows their live feeds; the camera ends inside the dome camera's lens (C). Indoor CCTV in corridors and classrooms is real (user). Built by `blender/scripts/scene_03_cctv.py` → `blender/scenes/s03_cctv.blend`; feeds `renders/_cctv_feeds/`.
+
+**ENTRY:** S at 450 (slab above the corridor ceiling, 24 mm, looking straight down, 0.12 m/frame).
+**EXIT:** C at 599 (inside the dome camera's lens).
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): morning · cool neutral (≈ 5600–6000 K), slightly dim, small blue status LEDs · cool light-grey walls, pale grey-washed floor · camera language: **vertical swoop + slow axial push** · mood: calm watchfulness. The only scene with CCTV cameras.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 3a | 450 | Top-down onto a calm, dim security room: desk with keyboard, wall of monitors | 24 mm | Low ambient, monitors as key (cool 7000 K) | Tilt to horizontal while descending |
-| 3b | 480 | Monitor wall: 3×3 feeds of empty school spaces (corridor, entrance, field, classrooms) with a generic CCTV overlay (REC dot, camera IDs "CAM 01"…, running time code without date) | 40 mm, slow push-in | Monitor glow | Feeds show subtle motion (light shift, door closing, curtain moving) |
-| 3c | 515 | A ceiling CCTV dome camera (real 3D) in the room rotates toward the lens | 85 mm, close | Rim light on the dome | Dome pans with mechanical ease, small stop |
-| 3d | 545 | Push toward the centre feed: the English classroom seen from a high corner | 40 → 70 mm push | Monitor glow | Feed grows to fill the frame |
-| 3e | 575–599 | The feed fills the frame; overlay fades out by 595; ready for F | Matches the feed camera (18 mm equivalent) | English-class daylight | Ease into F motion |
+| 3a | 450–470 | Slab → the camera drops through the ceiling into a warm-modern corridor (oak floor, white walls, oak doors, tile ceiling with downlights + LED slots, window at the far end) | 24 mm straight down, swoops into a forward glide; lens 24 → 35 mm by 484 | cool neutral, slightly dim (room light set in the scene file); slab isolation 450–453 | Descent bends into forward motion (no overshoot), tilt up to look down the corridor |
+| 3b | 484–510 | Cameras appear: bullet L slides out of its wall housing on twin rails (484), the dome lowers from a ceiling hatch on a pendant rod (488), bullet R slides out (492). Security monitor (wall, right) shows their live feeds from 484 | 35 mm, slow forward dolly | same | Eased rail slides (smootherstep), staggered |
+| 3c | 510–553 | Servo pans: LEFT 35° (510/512/514), pause 0.5 s, RIGHT 70° (535/537/539) | 35 mm; glance toward the monitor 516–568 | same | Quick start, smooth stop, tiny overshoot + settle |
+| 3d | 550–588 | A soft glowing light point appears at the far end and travels down the corridor past the camera; cameras lock on (blue LEDs pulse brighter at 567/569/571) and track it | 35 mm | the point lights walls and floor as it passes | Locked Track (pan) + Damped Track (tilt) on lagged targets (3/5/7 frames) |
+| 3e | 568–599 | The dome turns to face the camera; push forward-and-down into its multi-coated lens | 35 mm, DOF on the lens | lens coating reflections | Hermite ease into the constant C speed (0.01 m/frame) |
 
-**Sound cues**
-- 450 — low electronic room tone fade in
-- 480 — soft monitor-wall power "tick" cascade (9 quick ticks, 480–492)
-- 515 — servo whir of the dome camera, stop click at 533
-- 545 — digital zoom "blip"
-- 590–599 — soft "signal lock" tone into the room
+Cameras: dome = pendant turret (white ball in a shroud, black face plate, coated lens, LED); bullets = white housing tube, sun shield, bezel, coated lens with IR LED ring, yoke on a pan joint, carriage on twin steel rails out of a white wall housing. HUD (thin focus brackets) is optional and will be added in Remotion — nothing baked into the 3D render.
+
+**Sound cues:** `docs/sound-cues.md` → Scene 3.
 
 ---
 
 ## Scene 4 — English class (600–809, 7.0 s)
 
-**ENTRY:** F at 600 (from the CCTV angle; the feed look dissolves 600–615).
+**ENTRY:** C at 600 (the dark lens-pass frame opens like an iris onto the room 600–615; no camera in the classroom, no CCTV look).
 **EXIT:** S at 809.
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): bright sunny morning · strong warm sun (≈ 5200 K), airy · warm white + teal · world map, open bookshelves, whiteboard + teacher's desk · camera language: **slow high crane** descending + airy lateral truck · mood: open, creative.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 4a | 600 | High corner view of a bright modern classroom, desks in rows | 18 mm, descending from the ceiling corner toward eye level | Warm daylight 5200 K through windows, soft AO | Crane down and forward, lens eases 18 → 35 mm by 640 |
+| 4a | 600 | High corner view of a bright, airy classroom: warm white walls, teal accents, a world map, open bookshelves, whiteboard and teacher's desk at the front, desks in rows | 35 mm (C entry: darkness opens), slow high crane descending from the ceiling corner toward eye level | Bright sunny morning, warm sun 5200 K through the windows, airy bounce | Slow crane down and forward |
 | 4b | 640 | Whiteboard: letters assemble out of small 3D tiles into English words (generic: "Hello", "Learn", "Future") | 35 mm, slow truck along the desks | Daylight + board spot | Tiles fly in on arcs and land with a small settle |
 | 4c | 700 | On a desk, a closed textbook opens on its own, pages turn (page bend) | 85 mm, shallow DOF | Daylight | Pages turn with weight and settle |
 | 4d | 750 | Globe on the shelf rotates; curtain moves softly in a breeze | 50 mm | Daylight, the curtain casts a moving shadow | Globe eases to a stop |
@@ -176,12 +180,13 @@ Same classroom kit, different dressing and colour accent (deep blue + warm wood)
 
 **ENTRY:** S at 810.
 **EXIT:** W at 989 (out through the window into the sky).
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): late morning · soft side light (≈ 5000 K) + warm desk lamp (≈ 2900 K) · deep burgundy accents, dark wood · classic literature shelves (unbranded spines, no real titles) · camera language: **low push-in** at desk height, long lenses, shallow DOF · mood: classic, literary.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 5a | 810 | Top-down onto a reading corner and desks | 24 mm | Late-morning daylight 5000 K | Tilt to horizontal |
-| 5b | 845 | Cyrillic alphabet chart; letters rotate into place one by one (3D tiles) | 50 mm, lateral slide right | Daylight | Tiles rotate 180° into place with easing |
-| 5c | 890 | Bookshelf of literature volumes (unbranded spines, no real titles); one book slides out and opens on a lectern | 65 mm | Warm reading lamp 3000 K accent | Slide with friction, open, settle |
+| 5a | 810 | Top-down onto a reading corner and dark-wood desks; burgundy accents | 24 mm → 50 mm | Soft late-morning side light 5000 K, warm desk lamp | Tilt to horizontal while dropping to desk height |
+| 5b | 845 | Cyrillic alphabet chart; letters rotate into place one by one (3D tiles) | 50 mm, low push-in at desk height | Side light | Tiles rotate 180° into place with easing |
+| 5c | 890 | Bookshelf of literature volumes (unbranded spines, no real titles); one book slides out and opens on a lectern | 85 mm, low slow push-in | Warm desk lamp 2900 K accent | Slide with friction, open, settle |
 | 5d | 930 | Desk with notebook by the window; a fountain pen rolls and stops against a ruler | 100 mm macro-ish, shallow DOF | Lamp + strong window light | Rolling with deceleration, contact |
 | 5e | 950–989 | Rack focus to the window; the window swings open; the camera moves forward-and-down through it until the bright sky fills the frame | 35 mm, exposure ramps +1.5 EV | Daylight blooms | Ease into W speed |
 
@@ -198,14 +203,15 @@ Same classroom kit, different dressing and colour accent (deep blue + warm wood)
 
 **ENTRY:** W at 990 (from the sky, exposure settling).
 **EXIT:** W at 1229 (through a facade window into the IT class).
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): midday · bright high sun (≈ 5600 K), short shadows, clear sky · saturated green turf · camera language: **aerial descent + low fast tracking** · mood: energy.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 6a | 990 | Bright sky settles; below, a green artificial-turf pitch with white markings and goals, the school building exterior (same kit model as the scene 1 hero image) along one side | 35 mm, looking 45° down, high | Clear afternoon sun (HDRI), long soft shadows | Descent eases out |
-| 6b | 1040 | Low over the grass; mown stripes; a ball (unbranded panels) rests on the centre spot | 28 mm, low tracking shot | Sun backlight, grass translucency | Camera glides at grass height |
+| 6a | 990 | Bright sky settles; below, a green artificial-turf pitch with white markings and goals, the school beside it: the real left building from the entrance photo (cream/beige, 3 storeys, brown roof edge), extended in the same style, slightly out of focus, with trees | 35 mm, looking 45° down, high (aerial descent) | Bright midday sun, short crisp shadows, clear sky | Descent eases out |
+| 6b | 1040 | Low over the grass; mown stripes; a ball (unbranded panels) rests on the centre spot | 24 mm, low fast tracking shot | Sun backlight, grass translucency | Camera glides at grass height |
 | 6c | 1090 | The ball starts rolling (pushed by a gust — no player), accelerates toward goal | 35 mm, tracking alongside | Same | Rolling physics, bounces off a small bump |
 | 6d | 1150 | The ball hits the net; the net ripples and catches the ball | 50 mm, behind the goal | Same | Net ripple (GN / light cloth), ball drops and settles |
-| 6e | 1180–1229 | Camera turns toward the school's glazed facade and descends along it toward a ground-floor window until one pane fills the frame | 35 mm, forward-and-down | Sky reflection in the glass | Ease into W speed |
+| 6e | 1180–1229 | Camera turns toward that building's facade and descends along it toward a ground-floor window until one pane fills the frame | 35 mm, forward-and-down | Sky reflection in the glass | Ease into W speed |
 
 **Sound cues**
 - 990 — wind/air ambience swell; light birds
@@ -221,11 +227,12 @@ Same classroom kit, different dressing and colour accent (deep blue + warm wood)
 
 **ENTRY:** W at 1230 (through the window pane from outside).
 **EXIT:** S at 1469.
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): early afternoon, blinds down · dark, blue/violet LED accents, glossy surfaces, screens as key light · camera language: **orbit** · mood: tech, mystery.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 7a | 1230 | Through the glass: rows of desks with monitors (all off); the sky reflection fades as the camera passes the pane | 35 mm, forward-and-down to desk height | Daylight from the windows, dim interior 6500 K | Ease out of W speed |
-| 7b | 1270 | Monitors switch on in a wave down the rows; generic invented IDE/UI on the screens | 35 mm, slow dolly along a row | Screens become the key light | Wave of power-on, 2-frame stagger |
+| 7a | 1230 | Through the glass: rows of desks with monitors (all off); the sky reflection fades as the camera passes the pane | 35 mm, forward-and-down to desk height | Dark room (blinds down, thin daylight slits); blue/violet LED accents, glossy dark surfaces | Ease out of W speed |
+| 7b | 1270 | Monitors switch on in a wave down the rows; generic invented IDE/UI on the screens | 35 mm, slow orbit around the end of a row | Screens become the key light | Wave of power-on, 2-frame stagger |
 | 7c | 1330 | Close: keyboard keys depress by themselves in a typing rhythm; code appears on the screen | 85 mm, shallow DOF | Screen glow | Key travel with bottom-out and release |
 | 7d | 1390 | A small educational robot kit (generic) on a desk assembles: parts slide and click together, LEDs light up | 50 mm, orbit 30° | Screen + robot LEDs | Assemble with settles |
 | 7e | 1440–1469 | Tilt down → slab | → 24 mm, S | — | Ease into S |
@@ -244,11 +251,12 @@ Same classroom kit, different dressing and colour accent (deep blue + warm wood)
 
 **ENTRY:** S at 1470.
 **EXIT:** H at 1709 (into the steam).
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): afternoon · warm golden light through a glass wall (≈ 3800–4200 K) · cream + terracotta, Uzbek blue-and-white ceramic accents (unbranded) · camera language: **top-down** bird's-eye glides, vertical descent into the steam · mood: home, hospitality.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
-| 8a | 1470 | Top-down onto a clean, bright cafeteria: long tables, set places | 24 mm | Warm 4000 K pendant lights + daylight | Tilt to horizontal |
-| 8b | 1520 | Large kazan on the serving counter, lid on | 50 mm, slow push-in | Warm key on the kazan | Lid lifts and slides aside; steam billows (volume) |
+| 8a | 1470 | Top-down onto a clean, bright cafeteria: long tables, set places | 24 mm | Warm golden afternoon light through the glass wall; cream + terracotta, blue-and-white ceramics | Top-down glide along the tables |
+| 8b | 1520 | Large kazan on the serving counter, lid on | 50 mm, top-down glide over the counter onto the kazan | Golden key on the kazan | Lid lifts and slides aside; steam billows (volume) |
 | 8c | 1575 | Close on the plov: glossy rice, carrot strips, chickpeas, meat | 100 mm, shallow DOF, f/2 | Warm backlight through the steam | Steam drifts; slow rack focus |
 | 8d | 1620 | A plate on the table receives the plov: rice grains cascade and settle into a mound, garnish lands | 50 mm, slight top angle | Warm | GN drop-and-settle; small bounce of grains |
 | 8e | 1670–1709 | Camera rises over the kazan and descends straight down into the steam column until warm haze fills the frame | 35 mm, top-down | Steam lit warm 3200 K | Ease into H |
@@ -267,13 +275,14 @@ Same classroom kit, different dressing and colour accent (deep blue + warm wood)
 
 **ENTRY:** H at 1710 (warm haze resolves into the frosted ceiling-lamp glow).
 **EXIT:** S at 1919 → handed to Remotion as the first frame of scene 10.
+**Atmosphere** (`docs/design-language.md` → Room atmospheres): evening · warm lamps (≈ 2700–2900 K), deep blue window light · muted sage + beige, soft textiles · camera language: **slow lateral slide**, gentle drift · mood: cozy, safe.
 
 | KF | Frame | In frame | Camera / lens | Light | Motion |
 |---|---|---|---|---|---|
 | 9a | 1710 | Lamp glow pulls into focus; the camera descends past the lamp; the tidy dorm room below: beds, desks, wardrobes | 35 mm, top-down → tilt to horizontal | Evening, warm 2800 K lamps, deep blue window light | Ease out of H |
 | 9b | 1750 | A folded blanket on a bed unfolds and settles across the mattress | 35 mm | Warm lamps | Cloth sim: lift, unfold, drape, settle |
 | 9c | 1810 | Pillow drops lightly into place; bedside lamp clicks on | 50 mm, shallow DOF | Lamp key turns on | Pillow compression is physical (shape key), no cartoon squash |
-| 9d | 1860 | Window: curtains close gently; night sky outside | 35 mm, slow push to the window | Moonlight cool rim + warm interior | Curtain cloth |
+| 9d | 1860 | Window: curtains close gently; night sky outside | 35 mm, slow lateral slide to the window | Moonlight cool rim + warm interior | Curtain cloth |
 | 9e | 1895–1919 | Tilt down → slab | → 24 mm, S | — | Ease into S |
 
 **Sound cues**

@@ -5,5 +5,12 @@
     "count": 270,
     "pad": 4,
     "ext": "png"
+  },
+  "s03_cctv": {
+    "dir": "renders/s03_cctv",
+    "first": 450,
+    "count": 150,
+    "pad": 4,
+    "ext": "png"
   }
 }

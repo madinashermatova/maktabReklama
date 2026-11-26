@@ -1,10 +1,31 @@
 # Design language — ZIYO YOG’DUSI
 
-> **Status: CHOSEN — option A "Warm modern" (user decision, 2026-11-25). Fixed for the whole film.**
+> **Status: CHOSEN — option A "Warm modern" (user decision, 2026-11-25) as the shared architectural shell.**
+> **Since 2026-11-26 (user decision): A defines only the shell that every interior shares** — graphite window frames, light oak doors, the white tile ceiling system and its fixtures. Walls, floors, accents, light, furniture, props and camera language are set **per room** in "Room atmospheres" below; the palette in the next section is the default/neutral reference (and the shell values), not a rule for every room.
 > There are no reference photos; every space is designed in Blender. The kit (`blender/scripts/build_kit.py`) builds only this style. Options B (clean white-and-glass) and C (bold contemporary) were rejected and removed from the kit.
 > Real school details (building colour, floors, roof shape, main colours): **none provided yet** — when given, they override the values below.
 
 Calm, comfortable and safe: warm white walls, light oak floors and doors, deep teal as the identity accent, amber as a small secondary warmth accent (links to the scene 1 amber code-liquid).
+
+## Room atmospheres — binding for every scene brief (user decision 2026-11-26)
+
+**No two rooms may look alike.** Keep the shared shell (window frames, doors, ceiling system) so it is clearly one school; give each room its own palette, light, furniture, props **and camera language**. The film follows **one school day, morning to evening**. Camera motion never repeats from room to room.
+**CCTV cameras appear only in scene 3** — no visible camera in any other room (single exception: the real camera on the right building's corner in the entrance photo, scene 1, and its faithful replica, scene 2).
+
+| Scene | Room | Time of day | Light | Palette / materials (inside the shared shell) | Furniture & props | Camera language | Mood |
+|---|---|---|---|---|---|---|---|
+| 2 | Entrance / turnstile | early morning | cool early-morning daylight (≈ 6000–6500 K), crisp shadows | real replica outside (photo wins); hall: brushed steel, clear glass, pale grey stone floor | glass-wing turnstiles, Face ID terminal (dot-lattice UI only) | **precise axial moves**: straight symmetric dolly along the centre line, locked framing, exact stops | security |
+| 3 | Corridor / CCTV | morning | cool neutral (≈ 5600–6000 K), slightly dim; small **blue** status LEDs | cool light-grey walls, pale grey-washed floor | 3 CCTV cameras (only here), security monitor with live feeds | **vertical swoop + slow axial push** (crane down out of the slab, then push down the corridor into the lens) | calm watchfulness |
+| 4 | English class | bright sunny morning | strong warm sun (≈ 5200 K) through the windows, airy bounce | warm white + **teal** | world map, open bookshelves, whiteboard + teacher's desk, light desks | **slow high crane** descending, airy lateral truck | open, creative |
+| 5 | Russian class | late morning | soft side light from the windows (≈ 5000 K) + a warm desk lamp (≈ 2900 K) | deep **burgundy** accents, **dark wood** (walnut) | classic literature shelves (unbranded spines, no real titles), lectern, desk lamp | **low push-in** at desk height, long lenses, shallow DOF, near-static frames | classic, literary |
+| 6 | Stadium | midday | bright high sun (≈ 5600 K), short hard shadows, clear sky | saturated green turf, white lines | goals, net, unbranded ball | **aerial descent + low fast tracking** at grass height | energy |
+| 7 | IT room | early afternoon, blinds down | dark; **blue/violet LED** accents, screens as key light | glossy dark surfaces, graphite | monitors, keyboards, robot kit (generic UIs only) | **orbit** around desks / the robot | tech, mystery |
+| 8 | Cafeteria | afternoon | warm **golden** light through a **glass wall** (≈ 3800–4200 K, low sun) | **cream + terracotta**, Uzbek **blue-and-white ceramic** accents (unbranded) | long tables, kazan, plov, ceramic plates/bowls | **top-down** bird's-eye glides, vertical descent into the steam | home, hospitality |
+| 9 | Dormitory | evening | warm lamps (≈ 2700–2900 K), deep blue window light | muted **sage + beige**, soft textiles | beds, blankets, pillows, wardrobes, bedside lamps | **slow lateral slide**, gentle drift, soft focus | cozy, safe |
+
+Scene 1 (website void) and scenes 10–11 (Remotion rewind, brand reveal) are not rooms; their camera languages are the screen dive (1), the film-strip pull-back (10) and the point-of-light bloom (11).
+
+**Kit:** the four lighting presets (`day_interior`, `warm_interior`, `tech_dark`, `outdoor_day`) are starting points only. Each scene file sets its own room light (and copies of wall/floor materials) to match this table; new presets are added to the kit when a scene needs them. Shell pieces (`PIECE_wall_window`, `PIECE_door_frame`, `PIECE_ceiling_panel`) and their materials stay unchanged.
 
 ## Palette and materials
 

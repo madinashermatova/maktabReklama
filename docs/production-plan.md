@@ -31,7 +31,7 @@ Each scene lives in its own `.blend` around its own origin. The camera always tr
 |---|---|
 | 1 → 2 | D — Photo-to-3D dissolve (real entrance photo on the website → 3D replica, through the gate to the turnstile) |
 | 2 → 3 | S — Floor slab |
-| 3 → 4 | F — CCTV feed match |
+| 3 → 4 | C — Lens pass into the CCTV dome lens (replaces F, user decision 2026-11-26) |
 | 4 → 5 | S — Floor slab |
 | 5 → 6 | W — Window / sky pass (classroom window → sky over the stadium) |
 | 6 → 7 | W — Facade window pass (stadium → IT class) |
@@ -93,7 +93,8 @@ Benchmark (audit, simple 4-object scene, 1080p, EEVEE default samples): **14.1 s
 - Still to build: remaining furniture listed below.
 
 ### Procedural (built by scripts in `blender/scripts/`, shared parts in `blender/kit/`)
-- **School building exterior:** facade with the kit's window frames and glazing, entrance with canopy, roof, surrounding ground. Used as the website hero image in scene 1 (rendered still → Remotion UI) and seen in the background of the stadium (scene 6, including the glazed facade for the 6 → 7 window pass). Designed so the Russian classroom and IT class have exterior windows and the IT class faces the field.
+- **School building exterior:** ~~kit building~~ superseded (2026-11-26): the website hero is the real entrance photo (scene 1).
+- **Stadium background (scene 6) — user decision 2026-11-26:** the school seen beside the field is the **real left building from the entrance reference** (`assets/reference/entrance_front.jpg`: cream/beige plaster, 3 storeys, brown roof edge), **extended in the same style** (same window rhythm, plaster, roof edge; extension = neutral invented detail, listed in `docs/status.md`), slightly out of focus. Trees from the tree generator of the superseded kit building (`kit_building.py`). The kit building `PIECE_school_building` is not used in the film. The 6 → 7 facade window pass goes through a ground-floor window of this building.
 - Architecture kit: walls, floor, ceiling grid, window frames, doors, slab, light fixtures, corridor module.
 - Furniture: desks, chairs, whiteboard, shelves, bunk/single beds, cafeteria tables, security desk.
 - Tech: monitors, PCs, keyboards, CCTV cameras, glass-wing turnstiles + Face ID terminal (abstract dot-lattice UI).

@@ -447,6 +447,7 @@ HANDOFF_TYPES = {
     "S": dict(lens=24.0, speed=0.12, direction="DOWN"),  # floor-slab pass (default)
     "D": dict(lens=18.0, speed=0.03, direction="VIEW"),  # photo-to-3D dissolve 1→2 (anchor = CAM_S02_START in kit/entrance.blend)
     "F": dict(lens=18.0, speed=0.02, direction="VIEW"),  # CCTV feed match (special lens)
+    "C": dict(lens=35.0, speed=0.01, direction="VIEW"),  # lens pass 3→4: into the CCTV dome lens (user decision 2026-11-26)
     "W56": dict(lens=35.0, speed=0.10, direction="VIEW"),  # window / sky pass 5→6
     "W67": dict(lens=35.0, speed=0.05, direction="VIEW"),  # facade window pass 6→7
     "H": dict(lens=35.0, speed=0.06, direction="DOWN"),  # haze match 8→9
@@ -456,7 +457,7 @@ HANDOFF_TYPES = {
 TRANSITIONS = {
     ("s01_website", "s02_turnstile"): "D",
     ("s02_turnstile", "s03_cctv"): "S",
-    ("s03_cctv", "s04_english"): "F",
+    ("s03_cctv", "s04_english"): "C",  # was F (CCTV feed match); lens pass since 2026-11-26
     ("s04_english", "s05_russian"): "S",
     ("s05_russian", "s06_football"): "W56",
     ("s06_football", "s07_it"): "W67",
