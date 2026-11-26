@@ -357,9 +357,12 @@ def kelvin_rgba(kelvin: float) -> tuple:
 
 # --------------------------------------------------------------------------- camera rig
 
-#: Consistent lens set (CLAUDE.md / step 4). Other focal lengths only where the storyboard
-#: explicitly asks for them (macro close-ups, the CCTV feed camera) — pass allow_special=True.
+#: Lens set (CLAUDE.md → CAMERA AND CONTINUITY). Standard: 24 / 35 / 50 mm.
+#: Special (pass allow_special=True): 18 mm wide establishing shots (website void, stadium; sparingly indoors),
+#: 85 / 100 mm close-ups (plov, camera lens, turnstile LED, smart-board code). Nothing outside 18–100 mm, ever.
 LENSES = (24.0, 35.0, 50.0)
+SPECIAL_LENSES = (18.0, 85.0, 100.0)
+LENS_MIN, LENS_MAX = 18.0, 100.0
 
 
 def make_camera_rig(
@@ -398,9 +401,12 @@ def make_camera_rig(
 
 
 def set_lens(cam, lens: float, frame: int | None = None, allow_special: bool = False) -> None:
-    """Set (and optionally keyframe) the focal length, enforcing the lens set unless allow_special."""
-    if lens not in LENSES and not allow_special:
-        raise ValueError(f"Lens {lens} mm is not in the lens set {LENSES}; pass allow_special=True if the storyboard asks for it")
+    """Set (and optionally keyframe) the focal length. Standard lenses always; 18/85/100 mm only with
+    allow_special; anything outside 18–100 mm is always refused."""
+    if not LENS_MIN <= lens <= LENS_MAX:
+        raise ValueError(f"Lens {lens} mm is outside the allowed range {LENS_MIN:g}–{LENS_MAX:g} mm (CLAUDE.md)")
+    if lens not in LENSES and not (allow_special and lens in SPECIAL_LENSES):
+        raise ValueError(f"Lens {lens} mm not allowed: standard {LENSES}, special {SPECIAL_LENSES} (allow_special=True)")
     cam.data.lens = lens
     if frame is not None:
         cam.data.keyframe_insert("lens", frame=frame)
@@ -557,6 +563,91 @@ def apply_lighting_preset(name: str, scene: bpy.types.Scene | None = None) -> di
             em.inputs["Color"].default_value = kelvin_rgba(spec["kelvin"]) if "kelvin" in spec else tuple(spec["rgb"]) + (1.0,)
             em.inputs["Strength"].default_value = spec["emit"]
     return cfg
+
+
+def sync_sky_to_sun(world, sun_obj) -> None:
+    """Point the world's sky texture sun at the same direction the sun lamp light comes from.
+    Sky texture convention (measured in Blender 5.3): sun_rotation 0 → sun toward +Y, 90° → +X."""
+    from_dir = (sun_obj.matrix_world.to_3x3() @ Vector((0, 0, 1))).normalized()
+    for n in world.node_tree.nodes:
+        if n.type == "TEX_SKY":
+            n.sun_elevation = math.asin(max(-1.0, min(1.0, from_dir.z)))
+            n.sun_rotation = (math.pi / 2 - math.atan2(from_dir.y, from_dir.x)) % (2 * math.pi)
+
+
+def set_sun_direction(sun_obj, elevation_deg: float, azimuth_deg: float) -> None:
+    """azimuth = compass direction the light COMES FROM (0 = +X, 90 = +Y). Re-sync the sky afterwards."""
+    el, az = math.radians(elevation_deg), math.radians(azimuth_deg)
+    towards = -Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
+    sun_obj.rotation_euler = towards.to_track_quat("-Z", "Y").to_euler()
+
+
+def add_slab_probe(slab_instance, name: str = "SLAB_irradiance"):
+    """Irradiance volume filling the cavity of a PIECE_slab instance, so only the slab's own LEDs light the cut
+    frame (no world light leaking in) and the S pass looks identical in both scene files. Bake it with the scene."""
+    coll = slab_instance.instance_collection
+    x0, x1, y0, y1, z0, z1 = coll["cavity"]
+    pd = bpy.data.lightprobes.new(name, "VOLUME")
+    probe = bpy.data.objects.new(name, pd)
+    probe.parent = slab_instance
+    probe.location = ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
+    probe.scale = ((x1 - x0) / 2 - 0.02, (y1 - y0) / 2 - 0.02, (z1 - z0) / 2 - 0.02)
+    for prop, val in (("resolution_x", 8), ("resolution_y", 8), ("resolution_z", 4), ("capture_world", False)):
+        if hasattr(pd, prop):
+            setattr(pd, prop, val)
+    bpy.context.scene.collection.objects.link(probe)
+    # Reflection probe in the cavity: metals reflect the slab interior, not the scene's world
+    sd = None
+    for kind in ("SPHERE", "CUBEMAP"):
+        try:
+            sd = bpy.data.lightprobes.new(f"{name}_refl", kind)
+            break
+        except TypeError:
+            continue
+    if sd is not None:
+        sp = bpy.data.objects.new(f"{name}_refl", sd)
+        sp.parent = slab_instance
+        sp.location = probe.location
+        for prop, val in (("influence_distance", max(x1 - x0, y1 - y0) / 2), ("influence_type", "BOX")):
+            try:
+                setattr(sd, prop, val)
+            except (AttributeError, TypeError):
+                pass
+        sp.scale = probe.scale
+        bpy.context.scene.collection.objects.link(sp)
+    return probe
+
+
+#: Exposure used inside the slab on both sides of every S cut.
+SLAB_EXPOSURE = 0.0
+
+
+def key_slab_isolation(first_frame: int, last_frame: int, scene: bpy.types.Scene | None = None) -> None:
+    """EEVEE lets world light leak into the closed slab cavity (measured: +24 % brightness under day_interior vs.
+    the LEDs alone). For the frames the camera is inside the slab, key every world Background strength to 0 and
+    the view exposure to SLAB_EXPOSURE (constant interpolation), then restore. Put first_frame/last_frame on the
+    frames where the camera is inside a solid deck, so the switch itself is never seen. Use in both scene files."""
+    sc = scene or bpy.context.scene
+    nodes = [n for n in sc.world.node_tree.nodes if n.type == "BACKGROUND"]
+    vs = sc.view_settings
+    for owner, path, inside in [(n.inputs["Strength"], "default_value", 0.0) for n in nodes] + [(vs, "exposure", SLAB_EXPOSURE)]:
+        outside = getattr(owner, path)
+        for f, v in ((first_frame - 1, outside), (first_frame, inside), (last_frame, inside), (last_frame + 1, outside)):
+            setattr(owner, path, v)
+            owner.keyframe_insert(path, frame=f)
+        setattr(owner, path, outside)
+    for idb in (sc.world.node_tree, sc):
+        for fc in fcurves_of(idb):
+            if "Strength" in fc.data_path or fc.data_path.endswith("exposure"):
+                for kp in fc.keyframe_points:
+                    kp.interpolation = "CONSTANT"
+
+
+def slab_handoff_matrix(slab_instance):
+    """World matrix of the cut point (slab midpoint) of a PIECE_slab instance → use as key_handoff anchor."""
+    from mathutils import Matrix
+
+    return slab_instance.matrix_world @ Matrix.Translation(Vector(slab_instance.instance_collection["handoff_local"]))
 
 
 # --------------------------------------------------------------------------- self-test

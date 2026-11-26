@@ -7,7 +7,7 @@ States: **not started** · **in progress** · **review** · **approved**
 | Item | State | Notes |
 |---|---|---|
 | Environment audit | approved | EEVEE 14.1 s/frame, Cycles CPU 56.3 s/frame @1080p (simple scene) |
-| CLAUDE.md rulebook | review | |
+| CLAUDE.md rulebook | review | 2026-11-26: lens rule added (24/35/50 standard; 18 wide, 85/100 close-up; nothing outside 18–100 mm) — enforced in `_common.set_lens()` |
 | Production plan | review | Open questions Q1–Q4 in `docs/production-plan.md` |
 | Storyboard | review | |
 | Initial git commit | blocked | Git user.name / user.email still not found in any git config (re-checked after the skeleton step) |
@@ -18,8 +18,9 @@ States: **not started** · **in progress** · **review** · **approved**
 | # | Scene | Frames | State | Notes |
 |---|---|---|---|---|
 | — | Design language | approved | **A — Warm modern**, fixed (`docs/design-language.md`) |
-| — | Shared kit `blender/kit/school_kit.blend` (`build_kit.py`) v2 | review | style A only; real lights under every fixture; school desk/chair/monitor/LED accent; exterior backdrop + HDRI; irradiance-volume bake; renders `renders/_kit/v2/`. Slab piece not yet built |
-| — | School building exterior (kit) | — | not started | scene 1 hero image + scene 6 background |
+| — | Shared kit `blender/kit/school_kit.blend` (`build_kit.py`) v2 | **approved** (2026-11-26, step 3) | style A only; real lights under every fixture; school desk/chair/monitor/LED accent; exterior backdrop + HDRI; irradiance-volume bake; renders `renders/_kit/v2/`. v2 review notes recorded in `docs/design-language.md` and applied to the kit: lacquered floor gloss, `tech_dark` exposure 0.4 → 0.7 + brighter neutral fill, backdrop trees with leaf clusters + leaf cards, backdrop buildings with recessed framed windows and three plaster tones. `outdoor_day` now uses a procedural physical sky (no HDRI trees in the sky) synced to the sun lamp |
+| — | Floor slab `PIECE_slab` (`kit_slab.py`) | review | 6 × 6 m, 1.2 m thick: concrete decks, sealed 0.9 m cavity with ribs, 2 cable trays + cables, round duct, 4000 K LED strips (own light, not preset-driven); `slab_HANDOFF` at −0.61. Test `kit_slab_test.py`: cut frame renders **identically (0/255 diff)** under `day_interior` and `tech_dark` when scenes use `C.key_slab_isolation()` (EEVEE leaks world light into the cavity otherwise: +24 %). Renders `renders/_kit/slab/` |
+| — | School building exterior `PIECE_school_building` + `PIECE_school_grounds` (`kit_building.py`) | **review — awaiting your approval** | `renders/_kit/exterior/school_exterior_v1.png` (960×540, 64 samples, 28.7 s). Neutral choices (3 storeys, flat roof, warm white render, teal entrance portal) — not real details of the school. Scene 1 hero image + scene 6 background |
 | 1 | Website | 0–269 | not started | |
 | 2 | Turnstile with Face ID | 270–449 | not started | abstract dot-lattice scan UI only |
 | 3 | CCTV | 450–599 | not started | depends on Q3 |

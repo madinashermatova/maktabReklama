@@ -24,7 +24,7 @@ The floor-slab pass is the default; six transition types are used in total. Ever
 | 10 → 11 | 2069 → 2070 | **L — Point-of-light** | The last strip frame collapses to a point of light that blooms into the wordmark |
 
 ### S — Floor-slab pass (default)
-Shared slab kit (`blender/kit/slab`, 1.2 m thick: concrete, cable trays, warm LED strips). The cut sits at the slab midpoint.
+Shared slab kit piece `PIECE_slab` in `blender/kit/school_kit.blend` (1.2 m thick: concrete decks, sealed cavity with ribs, cable trays, duct, warm LED strips). The cut sits at the slab midpoint.
 
 | Property | EXIT (last frame of N) = ENTRY (first frame of N+1) |
 |---|---|
@@ -32,7 +32,8 @@ Shared slab kit (`blender/kit/slab`, 1.2 m thick: concrete, cable trays, warm LE
 | Rotation | looking straight down (−Z), roll 0°, image "up" = scene +Y |
 | Focal length | 24 mm, DOF off during the pass |
 | Motion | descending 0.12 m/frame (3.6 m/s), constant ±6 frames around the cut; ENTRY = EXIT pose advanced one frame |
-| Light | slab interior only: warm-white LED strips 4000 K |
+| Light | slab interior only: warm-white LED strips 4000 K. Both scene files call `C.key_slab_isolation(first, last)` for the frames the camera is inside the slab (world strength 0, exposure `SLAB_EXPOSURE`, switched while the camera is inside a solid deck) — verified identical cut frame under different presets (`kit_slab_test.py`) |
+| Kit | `PIECE_slab` (`blender/scripts/kit_slab.py`); anchor = `C.slab_handoff_matrix(instance)`; probes = `C.add_slab_probe(instance)` |
 
 ### G — Screen-glass pass (1 → 2)
 | Property | EXIT 269 | ENTRY 270 |

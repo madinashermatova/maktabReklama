@@ -89,7 +89,8 @@ There are **no reference photos**. Every space — building exterior, entrance, 
 
 ### Kit status (`blender/kit/school_kit.blend`, built by `blender/scripts/build_kit.py`)
 - Built: walls (plain / window / door), floor, ceiling with real downlights + LED slots, skirting, corner post, student desk, school chair, monitor, LED accent channel, exterior backdrop (schoolyard, trees, low buildings), materials, 4 lighting presets, camera rig + hand-off helper.
-- Still to build: floor slab (S transition), school building exterior, remaining furniture listed below.
+- Built 2026-11-26: floor slab `PIECE_slab` (`kit_slab.py`), school building exterior `PIECE_school_building` + `PIECE_school_grounds` (`kit_building.py`, hero still via `kit_exterior_hero.py`).
+- Still to build: remaining furniture listed below.
 
 ### Procedural (built by scripts in `blender/scripts/`, shared parts in `blender/kit/`)
 - **School building exterior:** facade with the kit's window frames and glazing, entrance with canopy, roof, surrounding ground. Used as the website hero image in scene 1 (rendered still → Remotion UI) and seen in the background of the stadium (scene 6, including the glazed facade for the 6 → 7 window pass). Designed so the Russian classroom and IT class have exterior windows and the IT class faces the field.

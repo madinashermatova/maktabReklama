@@ -41,6 +41,7 @@ These rules apply to every step of this project. If a request conflicts with the
 - Each scene has a defined **ENTRY** frame and **EXIT** frame (camera position, rotation, focal length, light colour) — see `docs/storyboard.md`. The exit of scene N must match the entry of scene N+1 so cuts are invisible.
 - The **floor-slab pass** is the DEFAULT transition, not the only one: the camera descends through the shared floor slab (`blender/kit/slab`) and the cut happens at the slab midpoint, where both scenes show the identical slab interior.
 - Other transitions are used where they are motivated, and the film uses **at least 3 different transition types** so it never feels repetitive. Fixed choices: scene 1→2 passes **through the screen glass**; transitions into and out of the outdoor stadium (5→6, 6→7) use a **window/sky** move. The full transition list is in `docs/storyboard.md` → "Transitions"; every transition still moves the camera downward (or forward-and-down) and has a matched EXIT/ENTRY definition.
+- **Lenses:** 24 / 35 / 50 mm are the standard set. Also allowed: **18 mm** for wide establishing shots (website void, stadium; use sparingly indoors to avoid distortion) and **85 / 100 mm** for close-ups (plov, camera lens, turnstile LED, smart-board code). **Nothing wider than 18 mm or longer than 100 mm.** Enforced by `_common.set_lens()`.
 - No random camera shake. Every speed change uses smooth easing (speed ramps, Bezier — no linear starts/stops).
 
 ## ANIMATION QUALITY

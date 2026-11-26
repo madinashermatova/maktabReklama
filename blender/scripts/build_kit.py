@@ -180,7 +180,7 @@ def mat_paint(name, hex_color, rough=0.85, vary=False):
     return m
 
 
-def mat_wood(name, hex_color, planks=False, rough=0.42, coat=0.0, vary=False):
+def mat_wood(name, hex_color, planks=False, rough=0.42, coat=0.0, coat_rough=0.18, vary=False):
     m, nt, b = new_material(name)
     base = C.hex_rgba(hex_color)
     vec = uv_vec(nt)
@@ -207,7 +207,7 @@ def mat_wood(name, hex_color, planks=False, rough=0.42, coat=0.0, vary=False):
     nt.links.new(map_range(nt, g.outputs["Fac"], rough - 0.08, rough + 0.08), b.inputs["Roughness"])
     bump(nt, b, height, 0.25 if planks else 0.08, 0.002)
     if coat:
-        bsdf_set(b, coat=coat, coat_rough=0.18)
+        bsdf_set(b, coat=coat, coat_rough=coat_rough)
     return m
 
 
@@ -265,9 +265,9 @@ def mat_grass(name):
     m, nt, b = new_material(name)
     vec = uv_vec(nt)
     n = noise(nt, vec, 1.2, 6.0, 0.6)
-    nt.links.new(ramp(nt, n.outputs["Fac"], [(0.3, C.hex_rgba("#3C6E26")), (0.7, C.hex_rgba("#6A9A3A"))]),
+    nt.links.new(ramp(nt, n.outputs["Fac"], [(0.3, C.hex_rgba("#2E6420")), (0.7, C.hex_rgba("#5C962F"))]),
                  b.inputs["Base Color"])
-    bsdf_set(b, rough=0.75, sheen=0.3, sheen_rough=0.4)
+    bsdf_set(b, rough=0.8, sheen=0.08, sheen_rough=0.5)
     bump(nt, b, noise(nt, vec, 420.0, 2.0, 0.5).outputs["Fac"], 0.5, 0.01)
     return m
 
@@ -346,7 +346,7 @@ def build_materials() -> dict:
         "accent2": mat_paint("KIT_accent2", P["accent2"], rough=0.6),
         "wood_light": mat_wood("KIT_wood_light", P["wood_light"], vary=True),
         "wood_dark": mat_wood("KIT_wood_dark", P["wood_dark"], rough=0.38, vary=True),
-        "floor": mat_wood("KIT_floor", P["wood_light"], planks=True, rough=0.42, coat=0.2),
+        "floor": mat_wood("KIT_floor", P["wood_light"], planks=True, rough=0.40, coat=0.6, coat_rough=0.12),  # lacquered satin gloss (v2 note 3)
         "steel_brushed": mat_metal("KIT_steel_brushed", "#B9BDC1", 0.28, brushed=True),
         "chrome": mat_metal("KIT_chrome", "#EDEDEF", 0.04),
         "glass": mat_glass("KIT_glass"),
@@ -431,10 +431,11 @@ def add_rounded_slab(bm, cx, cy, cz, w, d, t, r, segments=6, mat_index=0, plane=
 
 
 def wall_bm(W, H, T, opening=None):
-    """Clean all-quad wall slab around an optional opening (x0, x1, z0, z1); z0 = 0 → door."""
+    """Clean all-quad wall slab around optional opening(s) (x0, x1, z0, z1); z0 = 0 → door.
+    `opening` may be one tuple or a list of tuples (facades)."""
     xs, zs = {0.0, W}, {0.0, H}
-    if opening:
-        x0, x1, z0, z1 = opening
+    openings = [] if not opening else [opening] if isinstance(opening[0], (int, float)) else list(opening)
+    for x0, x1, z0, z1 in openings:
         xs |= {x0, x1}
         zs |= {z0, z1}
     xs, zs = sorted(xs), sorted(zs)
@@ -450,7 +451,8 @@ def wall_bm(W, H, T, opening=None):
     def solid(i, k):
         if i < 0 or k < 0 or i >= nx or k >= nz:
             return False
-        return not (opening and xs[i] >= x0 and xs[i + 1] <= x1 and zs[k] >= z0 and zs[k + 1] <= z1)
+        return not any(xs[i] >= x0 and xs[i + 1] <= x1 and zs[k] >= z0 and zs[k + 1] <= z1
+                       for x0, x1, z0, z1 in openings)
 
     for i in range(nx):
         for k in range(nz):
@@ -762,47 +764,58 @@ def build_exterior(M, parent):
     add_box(bm, 16, 70, 2.0, 20.0, -0.15, -0.10)
     finish_object("lawn", bm, [M["grass_artificial"]], c, bevel=0)
 
-    # Trees: trunk + displaced leafy crown clusters
-    tex = bpy.data.textures.new("KIT_crown_noise", "CLOUDS")
-    tex.noise_scale = 0.9
+    # Trees: natural canopies of leaf clusters + alpha leaf cards (kit v2 note 1)
+    import kit_building as KB  # noqa: E402  (late import: kit_building imports this module)
     for i in range(14):
         if i < 9:  # row of trees on the lawn beyond the yard
             x, y = rnd.uniform(-45, 45), rnd.uniform(21, 29)
         else:  # a few closer trees at the sides of the yard
             x, y = rnd.choice((-1, 1)) * rnd.uniform(22, 45), rnd.uniform(10, 18)
-        h = rnd.uniform(2.6, 3.6)
-        r = rnd.uniform(2.0, 3.2)
-        bm = bmesh.new()
-        res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=0.18, radius2=0.11, depth=h + r * 0.6)
-        bmesh.ops.translate(bm, verts=res["verts"], vec=(x, y, -0.15 + (h + r * 0.6) / 2))
-        finish_object(f"tree_trunk_{i}", bm, [M["bark"]], c, bevel=0, smooth=True)
-        for k in range(3):
-            bm = bmesh.new()
-            bmesh.ops.create_icosphere(bm, subdivisions=3, radius=r * rnd.uniform(0.6, 0.85))
-            off = Vector((rnd.uniform(-0.6, 0.6) * r, rnd.uniform(-0.5, 0.5) * r, rnd.uniform(-0.2, 0.4) * r))
-            bmesh.ops.scale(bm, vec=(1.0, 1.0, rnd.uniform(0.8, 1.0)), verts=bm.verts)
-            bmesh.ops.translate(bm, verts=bm.verts, vec=Vector((x, y, h + r * 0.5)) + off)
-            crown = finish_object(f"tree_crown_{i}_{k}", bm, [M["leaves"]], c, bevel=0, smooth=True)
-            d = crown.modifiers.new("Leafy", "DISPLACE")
-            d.texture, d.strength, d.texture_coords = tex, r * 0.35, "GLOBAL"
+        h = rnd.uniform(6.5, 9.0)
+        KB.make_tree(f"bk_tree_{i:02d}", (x, y, -0.15), c, M, rnd, height=h, crown_r=h * 0.36,
+                     clusters=int(36 + h * 2.5), leaf_size=0.26 + h * 0.014)
 
-    # Neighbouring low buildings (2–3 storeys) with window bands facing the school (−Y faces)
-    for x0, x1, y0, depth, height in ((-70, -30, 75, 14, 7.2), (-18, 14, 88, 12, 10.4), (26, 66, 72, 14, 7.2)):
-        bm = bmesh.new()
-        add_box(bm, x0, x1, y0, y0 + depth, -0.15, height)
-        add_box(bm, x0 - 0.15, x1 + 0.15, y0 - 0.15, y0 + depth + 0.15, height, height + 0.6)  # parapet
-        finish_object(f"building_{x0}", bm, [M["plaster_ext"]], c, bevel=0.02)
-        bm = bmesh.new()
-        floors = int(height // 3.4) + 1
+    # Neighbouring low buildings (2–3 storeys) facing the school (−Y faces): recessed windows with graphite
+    # frames and sills, string course, parapet coping; each building a slightly different plaster tone
+    tones = ("#E4D8C4", "#E9E0D1", "#DCCCB4")
+    for n, (x0, x1, y0, depth, height) in enumerate(((-70, -30, 75, 14, 7.2), (-18, 14, 88, 12, 10.4), (26, 66, 72, 14, 7.2))):
+        plaster = mat_paint(f"KIT_plaster_exterior_{n}", tones[n], rough=0.9, vary=True)
+        floors = max(1, int(round(height / 3.4)))
+        openings = []
         for f in range(floors):
-            z = 0.9 + f * 3.4
-            if z + 1.6 > height:
-                break
-            xx = x0 + 1.5
-            while xx + 1.8 < x1 - 1.0:
-                add_box(bm, xx, xx + 1.8, y0 - 0.03, y0, z, z + 1.6)
+            z = 0.75 + f * 3.4
+            xx = 1.5
+            while xx + 1.8 < (x1 - x0) - 1.0:
+                openings.append((xx, xx + 1.6, z, z + 1.7))
                 xx += 3.0
-        finish_object(f"building_windows_{x0}", bm, [M["window_ext"]], c, bevel=0)
+        bm = wall_bm(x1 - x0, height + 0.15, 0.3, openings)
+        bmesh.ops.translate(bm, verts=bm.verts, vec=(x0, y0, -0.15))
+        finish_object(f"building_{x0}_facade", bm, [plaster], c, bevel=0.01)
+        bm = bmesh.new()
+        add_box(bm, x0, x1, y0 + 0.3, y0 + depth, -0.15, height)
+        add_box(bm, x0 - 0.05, x1 + 0.05, y0 - 0.05, y0 + depth + 0.05, height, height + 0.05)  # roof edge
+        finish_object(f"building_{x0}", bm, [plaster], c, bevel=0.02)
+        bm_f, bm_g = bmesh.new(), bmesh.new()
+        for ox0, ox1, oz0, oz1 in openings:
+            ax0, ax1, az0, az1 = x0 + ox0, x0 + ox1, oz0 - 0.15, oz1 - 0.15
+            fy0, fy1 = y0 + 0.12, y0 + 0.18
+            add_box(bm_f, ax0, ax1, fy0, fy1, az0, az0 + 0.05)
+            add_box(bm_f, ax0, ax1, fy0, fy1, az1 - 0.05, az1)
+            add_box(bm_f, ax0, ax0 + 0.05, fy0, fy1, az0, az1)
+            add_box(bm_f, ax1 - 0.05, ax1, fy0, fy1, az0, az1)
+            add_box(bm_f, (ax0 + ax1) / 2 - 0.025, (ax0 + ax1) / 2 + 0.025, fy0, fy1, az0, az1)
+            add_box(bm_f, ax0 - 0.04, ax1 + 0.04, y0 - 0.05, y0 + 0.12, az0 - 0.04, az0)  # sill
+            add_box(bm_g, ax0, ax1, y0 + 0.15, y0 + 0.16, az0, az1)
+        finish_object(f"building_frames_{x0}", bm_f, [M["frame"]], c, bevel=0.002)
+        finish_object(f"building_windows_{x0}", bm_g, [M["window_ext"]], c, bevel=0)
+        bm = bmesh.new()
+        for f in range(1, floors):
+            z = f * 3.4 - 0.3
+            add_box(bm, x0, x1, y0 - 0.03, y0, z, z + 0.12)
+        if floors > 1:
+            finish_object(f"building_bands_{x0}", bm, [plaster], c, bevel=0.004)
+        else:
+            bm.free()
 
 
 # --------------------------------------------------------------------------- lighting presets
@@ -887,23 +900,61 @@ def build_lighting(root):
         accent=off, screen=dict(watts=1.5, kelvin=6500, emit=2.5),
     ))
 
-    # tech_dark: neutral dark room; colour only from LED accents, LED slots and screens
-    hdri_world("W_tech_dark", HDRI_DIR / "night.exr", 200, 0.25, "#101113", 0.6)
+    # tech_dark: neutral dark room; colour only from LED accents, LED slots and screens.
+    # v2 note 4: exposure raised slightly + soft neutral fill (brighter ambient) so floor and desks stay readable.
+    hdri_world("W_tech_dark", HDRI_DIR / "night.exr", 200, 0.25, "#2A2C30", 0.95)
     preset("tech_dark", dict(
-        world="W_tech_dark", exposure=0.4,
-        downlight=dict(watts=7.0, kelvin=3800, emit=12.0),
+        world="W_tech_dark", exposure=0.7,
+        downlight=dict(watts=9.0, kelvin=4300, emit=14.0),
         ledstrip=dict(watts=4.0, rgb=[0.50, 0.25, 1.0], emit=14.0),
         accent=dict(watts=30.0, rgb=[0.12, 0.38, 1.0], emit=25.0),
         screen=dict(watts=4.0, kelvin=8000, emit=4.0),
     ))
 
-    # outdoor_day: high sun, HDRI sky, brighter cool ambient; interior fixtures off
-    hdri_world("W_outdoor_day", HDRI_DIR / "forest.exr", 200, 1.0, "#DCE3EA", 0.8)
+    # outdoor_day: high sun, procedural physical sky (seen by camera + used as cool ambient fill); fixtures off.
+    # The sky's sun position is synced to SUN_outdoor_day (C.sync_sky_to_sun) — sun disc off, the lamp is the sun.
+    sky_world("W_outdoor_day", seen_strength=0.22, ambient_strength=0.11)
     c = preset("outdoor_day", dict(
         world="W_outdoor_day", exposure=0.0,
         downlight=off, ledstrip=off, accent=off, screen=dict(watts=0.0, kelvin=6500, emit=1.0),
     ))
-    sun("SUN_outdoor_day", c, 52, 35, 8.0, 5600, angle_deg=1.0)
+    s = sun("SUN_outdoor_day", c, 52, 35, 8.0, 5600, angle_deg=1.0)
+    C.sync_sky_to_sun(bpy.data.worlds["W_outdoor_day"], s)
+
+
+def sky_world(name, seen_strength, ambient_strength):
+    """Physical sky (Blender sky texture, no external file). Camera/transmission rays see seen_strength,
+    diffuse/glossy lighting gets ambient_strength of the same sky (natural blue fill, no HDRI trees)."""
+    w = bpy.data.worlds.new(name)
+    _ensure_nodes(w)
+    nt = w.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputWorld")
+    sky = nt.nodes.new("ShaderNodeTexSky")
+    C._set_enum(sky, "sky_type", ("MULTIPLE_SCATTERING", "SINGLE_SCATTERING", "NISHITA", "HOSEK_WILKIE"))
+    if hasattr(sky, "sun_disc"):
+        sky.sun_disc = False
+    for prop, val in (("altitude", 600.0), ("air_density", 1.0), ("aerosol_density", 0.8), ("ozone_density", 1.0)):
+        if hasattr(sky, prop):
+            setattr(sky, prop, val)
+    seen = nt.nodes.new("ShaderNodeBackground")
+    seen.inputs["Strength"].default_value = seen_strength
+    amb = nt.nodes.new("ShaderNodeBackground")
+    amb.inputs["Strength"].default_value = ambient_strength
+    nt.links.new(sky.outputs["Color"], seen.inputs["Color"])
+    nt.links.new(sky.outputs["Color"], amb.inputs["Color"])
+    lp = nt.nodes.new("ShaderNodeLightPath")
+    mx_f = nt.nodes.new("ShaderNodeMath")
+    mx_f.operation = "MAXIMUM"
+    nt.links.new(lp.outputs["Is Camera Ray"], mx_f.inputs[0])
+    nt.links.new(lp.outputs["Is Transmission Ray"], mx_f.inputs[1])
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(mx_f.outputs[0], mix.inputs["Fac"])
+    nt.links.new(amb.outputs[0], mix.inputs[1])
+    nt.links.new(seen.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    w.use_fake_user = True
+    return w
 
 
 # --------------------------------------------------------------------------- main
@@ -922,10 +973,17 @@ def main():
     root = sc.collection
     pieces = bpy.data.collections.new("KIT_pieces")
     root.children.link(pieces)
+    import kit_building as KB  # noqa: E402  (late imports: these modules import build_kit)
+    import kit_slab as KS  # noqa: E402
+
     M = build_materials()
+    M.update(KB.exterior_materials())
     build_architecture(M, pieces)
     build_furniture(M, pieces)
     build_exterior(M, pieces)
+    KS.build_slab(pieces)
+    KB.build_school_building(M, pieces)
+    KB.build_school_grounds(M, pieces)
     for coll in pieces.children:
         try:
             coll.asset_mark()
