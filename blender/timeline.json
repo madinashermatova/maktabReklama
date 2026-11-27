@@ -15,57 +15,69 @@
       "end": 269,
       "durationInFrames": 270,
       "source": "blender",
-      "framesDir": "renders/s01_website"
+      "framesDir": "renders/s01_website",
+      "blendFrom": 0,
+      "blendEnd": 269
     },
     {
       "index": 2,
       "id": "s02_turnstile",
       "name": "Turnstile with Face ID",
       "from": 270,
-      "end": 449,
-      "durationInFrames": 180,
+      "end": 509,
+      "durationInFrames": 240,
       "source": "blender",
-      "framesDir": "renders/s02_turnstile"
+      "framesDir": "renders/s02_turnstile",
+      "blendFrom": 270,
+      "blendEnd": 509
     },
     {
       "index": 3,
       "id": "s03_cctv",
       "name": "CCTV",
-      "from": 450,
-      "end": 599,
+      "from": 510,
+      "end": 659,
       "durationInFrames": 150,
       "source": "blender",
-      "framesDir": "renders/s03_cctv"
+      "framesDir": "renders/s03_cctv",
+      "blendFrom": 450,
+      "blendEnd": 599
     },
     {
       "index": 4,
       "id": "s04_english",
       "name": "English class",
-      "from": 600,
-      "end": 809,
+      "from": 660,
+      "end": 869,
       "durationInFrames": 210,
       "source": "blender",
-      "framesDir": "renders/s04_english"
+      "framesDir": "renders/s04_english",
+      "blendFrom": 660,
+      "blendEnd": 869
     },
     {
       "index": 5,
       "id": "s05_russian",
       "name": "Russian class",
-      "from": 810,
-      "end": 989,
-      "durationInFrames": 180,
+      "from": 870,
+      "end": 1019,
+      "durationInFrames": 150,
       "source": "blender",
-      "framesDir": "renders/s05_russian"
+      "framesDir": "renders/s05_russian",
+      "blendFrom": 870,
+      "blendEnd": 1019
     },
     {
       "index": 6,
       "id": "s06_football",
       "name": "Football field",
-      "from": 990,
+      "from": 1020,
       "end": 1229,
-      "durationInFrames": 240,
+      "durationInFrames": 210,
       "source": "blender",
-      "framesDir": "renders/s06_football"
+      "framesDir": "renders/s06_football",
+      "blendFrom": 1020,
+      "blendEnd": 1229
     },
     {
       "index": 7,
@@ -75,7 +87,9 @@
       "end": 1469,
       "durationInFrames": 240,
       "source": "blender",
-      "framesDir": "renders/s07_it"
+      "framesDir": "renders/s07_it",
+      "blendFrom": 1230,
+      "blendEnd": 1469
     },
     {
       "index": 8,
@@ -85,7 +99,9 @@
       "end": 1709,
       "durationInFrames": 240,
       "source": "blender",
-      "framesDir": "renders/s08_cafeteria"
+      "framesDir": "renders/s08_cafeteria",
+      "blendFrom": 1470,
+      "blendEnd": 1709
     },
     {
       "index": 9,
@@ -95,7 +111,9 @@
       "end": 1919,
       "durationInFrames": 210,
       "source": "blender",
-      "framesDir": "renders/s09_dormitory"
+      "framesDir": "renders/s09_dormitory",
+      "blendFrom": 1710,
+      "blendEnd": 1919
     },
     {
       "index": 10,
@@ -105,7 +123,9 @@
       "end": 2069,
       "durationInFrames": 150,
       "source": "remotion",
-      "framesDir": "renders/s10_rewind"
+      "framesDir": "renders/s10_rewind",
+      "blendFrom": 1920,
+      "blendEnd": 2069
     },
     {
       "index": 11,
@@ -115,9 +135,28 @@
       "end": 2249,
       "durationInFrames": 180,
       "source": "blender",
-      "framesDir": "renders/s11_brand"
+      "framesDir": "renders/s11_brand",
+      "blendFrom": 2070,
+      "blendEnd": 2249
     }
   ],
+  "s02": {
+    "beats": {
+      "dissolveEnd": 300,
+      "zoomStart": 330,
+      "boothStop": 358,
+      "scanStart": 362,
+      "scanEnd": 388,
+      "granted": 391,
+      "wingsOpenStart": 395,
+      "wingsOpenEnd": 415,
+      "moveOn": 398,
+      "lanePass": 420,
+      "revealEnd": 470,
+      "tiltStart": 460,
+      "exitHold": 503
+    }
+  },
   "s01": {
     "beats": {
       "fadeInEnd": 12,

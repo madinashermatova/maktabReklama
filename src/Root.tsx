@@ -6,6 +6,11 @@ import { ZiyoCommercial } from "./ZiyoCommercial";
 import { FPS, HEIGHT, SCENES, TOTAL_FRAMES, WIDTH } from "./timeline";
 import { GENERIC_PAGES } from "./website/pages";
 import { School } from "./website/sites/School";
+import { FaceIdScreen } from "./s02/FaceIdScreen";
+
+/** Face ID terminal display texture (portrait 9:16). Pixel size of the TEXTURE only; the component derives all sizes from it. */
+const FACEID_W = 540;
+const FACEID_H = 960;
 
 // Each <Composition> is an entry in the sidebar!
 
@@ -33,6 +38,18 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           width={WIDTH}
           height={HEIGHT}
+        />
+      </Folder>
+
+      {/* Scene 2 Face ID terminal screen (film frames 270–509) → renders/_faceid/ via npm run faceid:render. */}
+      <Folder name="S02-Turnstile">
+        <Composition
+          id="S02-FaceID-Screen"
+          component={FaceIdScreen}
+          durationInFrames={SCENES[1].durationInFrames}
+          fps={FPS}
+          width={FACEID_W}
+          height={FACEID_H}
         />
       </Folder>
 

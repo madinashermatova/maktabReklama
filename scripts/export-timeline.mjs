@@ -25,7 +25,11 @@ const data = {
     durationInFrames: s.durationInFrames,
     source: s.source,
     framesDir: t.framesDirOf(s),
+    // Frame numbering inside the .blend / render files (= from/end unless the scene was built before a timeline shift).
+    blendFrom: t.blendFromOf(s),
+    blendEnd: t.blendFromOf(s) + s.durationInFrames - 1,
   })),
+  s02: { beats: t.S02_BEATS },
   s01: {
     beats: t.S01_BEATS,
     handoffD: t.HANDOFF_D,

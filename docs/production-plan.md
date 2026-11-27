@@ -5,16 +5,16 @@ Rules: see `CLAUDE.md`. Shot-level detail: `docs/storyboard.md`. Progress: `docs
 
 ## 1. Scene table
 
-Frame ranges are inclusive. The starting timeline is kept unchanged — no reason found to move any boundary yet. Final ranges live in `src/timeline.ts` once Remotion work starts.
+Frame ranges are inclusive. Ranges live in `src/timeline.ts`. **Revised 2026-11-27 (user):** scene 2 6 → 8 s (270–509); the 2 s come from scene 5 (6 → 5 s) and scene 6 (8 → 7 s); scenes 3–6 shift; scene 1 and scenes 7–11 unchanged. Scene 3 is not re-rendered: its `.blend` and frames stay numbered 450–599 (`blendFrom: 450`) and Remotion plays them at 510–659.
 
 | # | Name | Start | End | Frames | Seconds | Technique | Main risk | Fallback |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Website | 0 | 269 | 270 | 9.0 | Mixed: Remotion renders the invented website UI (hero image = the real entrance photo, sky replaced) as a frame sequence → used as screen texture on a Blender monitor; code-melt liquid in Blender | Code-melt liquid looks fake or is too heavy | 2D gooey-drip melt in Remotion (SVG/blur-threshold filter) over the Blender plate |
-| 2 | Turnstile with Face ID | 270 | 449 | 180 | 6.0 | Mixed: opens on the 3D replica of the real entrance (`blender/kit/entrance.blend`, photo-matched), through the gate; Blender hall + terminal + glass-wing turnstiles; scan UI (abstract dot/mesh lattice, scan line, dots lighting in sequence) made in Remotion as a screen texture | The scan graphic reads as a face, or the action is unclear without people | Flat square dot lattice with no face-like features; simplify to scan line + green state + gate opening |
-| 3 | CCTV | 450 | 599 | 150 | 5.0 | Mixed: Blender security-room set + monitor wall; feeds are low-res re-renders of other scene sets; Remotion adds generic CCTV overlay (REC dot, grid, camera IDs) | Rendering extra feed angles costs time; feeds must not look like real CCTV branding | Feeds use stills from other scenes with slow Remotion pans |
-| 4 | English class | 600 | 809 | 210 | 7.0 | Blender | Empty classroom feels lifeless | Motion through objects: books unfold, letters on board assemble, globe rotates, curtain cloth breathes |
-| 5 | Russian class | 810 | 989 | 180 | 6.0 | Blender (shares classroom kit with 4, different dressing) | Looks like a copy of scene 4 | Different camera path, colour accent, props (Cyrillic alphabet chart, literature books) |
-| 6 | Football field | 990 | 1229 | 240 | 8.0 | Blender | Grass density + outdoor lighting on iGPU; long render | GN grass only near camera, textured + displaced ground far away; HDRI sky |
+| 2 | Turnstile with Face ID | 270 | 509 | 240 | 8.0 | Mixed: opens on the 3D replica of the real entrance (`blender/kit/entrance.blend`, photo-matched), toward the guard booth; the one real Face ID turnstile in the passage beside it (user, 2026-11-27), then a calm glide toward the glass cafeteria (shared with scene 8) and a dive into the paving; scan UI (abstract dot/mesh lattice, scan line, dots lighting in sequence) made in Remotion as a screen texture | The scan graphic reads as a face, or the action is unclear without people | Flat square dot lattice with no face-like features; simplify to scan line + green state + gate opening |
+| 3 | CCTV | 510 | 659 | 150 | 5.0 | Mixed: Blender security-room set + monitor wall; feeds are low-res re-renders of other scene sets; Remotion adds generic CCTV overlay (REC dot, grid, camera IDs) | Rendering extra feed angles costs time; feeds must not look like real CCTV branding | Feeds use stills from other scenes with slow Remotion pans |
+| 4 | English class | 660 | 869 | 210 | 7.0 | Blender | Empty classroom feels lifeless | Motion through objects: books unfold, letters on board assemble, globe rotates, curtain cloth breathes |
+| 5 | Russian class | 870 | 1019 | 150 | 5.0 | Blender (shares classroom kit with 4, different dressing) | Looks like a copy of scene 4 | Different camera path, colour accent, props (Cyrillic alphabet chart, literature books) |
+| 6 | Football field | 1020 | 1229 | 210 | 7.0 | Blender | Grass density + outdoor lighting on iGPU; long render | GN grass only near camera, textured + displaced ground far away; HDRI sky |
 | 7 | IT class | 1230 | 1469 | 240 | 8.0 | Mixed: Blender room + Remotion-made generic code/UI on screens as textures | Many screens = many textures; generic UI must not resemble real OS | One shared screen sequence, offset per monitor |
 | 8 | Cafeteria — plov | 1470 | 1709 | 240 | 8.0 | Blender | Plov (rice grains, steam) hard to make appetising | Shader-based rice mound with displacement + a few GN grains on top; steam as animated volume, fallback alpha cards |
 | 9 | Dormitory | 1710 | 1919 | 210 | 7.0 | Blender | Cloth blanket sim instability | Shape-key / lattice animated blanket |
@@ -29,7 +29,7 @@ Each scene lives in its own `.blend` around its own origin. The camera always tr
 
 | Cut | Type |
 |---|---|
-| 1 → 2 | D — Photo-to-3D dissolve (real entrance photo on the website → 3D replica, through the gate to the turnstile) |
+| 1 → 2 | D — Photo-to-3D dissolve (real entrance photo on the website → 3D replica, toward the guard booth and the turnstile beside it) |
 | 2 → 3 | S — Floor slab |
 | 3 → 4 | C — Lens pass into the CCTV dome lens (replaces F, user decision 2026-11-26) |
 | 4 → 5 | S — Floor slab |
@@ -97,7 +97,7 @@ Benchmark (audit, simple 4-object scene, 1080p, EEVEE default samples): **14.1 s
 - **Stadium background (scene 6) — user decision 2026-11-26:** the school seen beside the field is the **real left building from the entrance reference** (`assets/reference/entrance_front.jpg`: cream/beige plaster, 3 storeys, brown roof edge), **extended in the same style** (same window rhythm, plaster, roof edge; extension = neutral invented detail, listed in `docs/status.md`), slightly out of focus. Trees from the tree generator of the superseded kit building (`kit_building.py`). The kit building `PIECE_school_building` is not used in the film. The 6 → 7 facade window pass goes through a ground-floor window of this building.
 - Architecture kit: walls, floor, ceiling grid, window frames, doors, slab, light fixtures, corridor module.
 - Furniture: desks, chairs, whiteboard, shelves, bunk/single beds, cafeteria tables, security desk.
-- Tech: monitors, PCs, keyboards, CCTV cameras, glass-wing turnstiles + Face ID terminal (abstract dot-lattice UI).
+- Tech: monitors, PCs, keyboards, CCTV cameras, one glass-wing turnstile + Face ID terminal (abstract dot-lattice UI).
 - Kazan, plates, rice/carrot/chickpea instances, steam volume.
 - Football goals, net, field markings, ball (unbranded panels), GN grass.
 - Code-melt liquid, cloth (blankets, curtains).
@@ -111,7 +111,7 @@ Benchmark (audit, simple 4-object scene, 1080p, EEVEE default samples): **14.1 s
 
 ### You must provide
 1. **Licensed instrumental music** → `assets/audio/music/` (≥75 s, licence document alongside).
-2. **Confirmation of facilities:** that the school really has every facility in the scene table (turnstile with Face ID, CCTV, football field, IT class, cafeteria, dormitory).
+2. **Confirmation of facilities:** that the school really has every facility in the scene table (turnstile with Face ID — **confirmed 2026-11-27: one, beside the guard booth at the entrance** —, CCTV, football field, IT class, cafeteria, dormitory).
 3. Website UI language (see Q2).
 4. Optional: real details of the building (colour, floors, roof shape, main colours) — used if given.
 

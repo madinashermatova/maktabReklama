@@ -6,6 +6,20 @@
     "pad": 4,
     "ext": "png"
   },
+  "s02_turnstile": {
+    "dir": "renders/s02_turnstile",
+    "first": 270,
+    "count": 240,
+    "pad": 4,
+    "ext": "png"
+  },
+  "s02_turnstile_proj": {
+    "dir": "renders/s02_turnstile_proj",
+    "first": 270,
+    "count": 31,
+    "pad": 4,
+    "ext": "png"
+  },
   "s03_cctv": {
     "dir": "renders/s03_cctv",
     "first": 450,

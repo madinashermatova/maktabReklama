@@ -6,7 +6,7 @@ import { type SceneDef, SCENES, sceneEnd } from "../timeline";
 /** One entry per scene, written by scripts/sync-renders.mjs after scanning public/renders/<id>/. */
 type RenderEntry = {
   dir: string; // folder inside public/
-  first: number; // number in the first file name (Blender writes absolute frame numbers)
+  first: number; // number in the first file name (the .blend numbering: film frame, or SceneDef.blendFrom)
   count: number; // contiguous frames available from `first`
   pad: number; // zero padding of the file names
   ext: string; // "png"
@@ -14,7 +14,9 @@ type RenderEntry = {
 const manifest = renders as Record<string, RenderEntry | undefined>;
 
 /**
- * Plays a scene's rendered frame sequence frame-accurately if it exists in public/renders/<id>/,
+ * Plays a scene's rendered frame sequence frame-accurately by SCENE-LOCAL index (file first + local frame), so a scene
+ * moved on the timeline after rendering (SceneDef.blendFrom) still plays its frames at its new position.
+ * Plays it if it exists in public/renders/<id>/,
  * otherwise (or past the last rendered frame) shows a clearly labelled PLACEHOLDER card.
  * Must be placed inside a <Sequence> starting at scene.from, so useCurrentFrame() is scene-local.
  */

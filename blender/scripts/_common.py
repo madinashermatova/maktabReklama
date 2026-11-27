@@ -48,10 +48,15 @@ def load_timeline() -> dict:
 
 
 def get_scene_def(scene_id: str) -> dict:
+    """Scene entry from timeline.json in BLENDER numbering: "from"/"end" are the frames the .blend is built and
+    rendered at (= blendFrom/blendEnd; equal to the film frames unless the scene was built before a timeline shift,
+    see SceneDef.blendFrom in src/timeline.ts). The film position is kept as "film_from"/"film_end"."""
     tl = load_timeline()
     for s in tl["scenes"]:
         if s["id"] == scene_id:
-            return s
+            d = dict(s, film_from=s["from"], film_end=s["end"])
+            d["from"], d["end"] = s.get("blendFrom", s["from"]), s.get("blendEnd", s["end"])
+            return d
     raise KeyError(f"Scene '{scene_id}' not in {TIMELINE_JSON}. Known: {[s['id'] for s in tl['scenes']]}")
 
 

@@ -28,7 +28,7 @@
     "typescript": "5.9.3"
   },
   "scripts": {
-    "dev": "remotion studio",
+    "dev": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/export-timeline.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-renders.mjs && remotion studio",
     "preview": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/export-timeline.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-renders.mjs && remotion studio",
     "render:preview": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/render.mjs preview",
     "render:final": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/render.mjs final",
@@ -38,7 +38,8 @@
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc",
-    "website:render": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/render-website.mjs"
+    "website:render": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/render-website.mjs",
+    "faceid:render": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/export-timeline.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/render-faceid.mjs"
   },
   "allowScripts": {
     "esbuild": false

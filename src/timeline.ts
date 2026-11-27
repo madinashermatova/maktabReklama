@@ -38,15 +38,23 @@ export type SceneDef = {
   source: SceneSource;
   /** Folder inside public/ with the frame sequence. Default: renders/<id> */
   framesDir?: string;
+  /**
+   * Frame numbering of the scene's .blend and its rendered files, when it differs from `from` — i.e. the scene
+   * was built and rendered before a timeline shift. Blender keeps building/rendering at blendFrom … blendFrom +
+   * durationInFrames − 1 (so the existing .blend and frames stay valid; no re-render), and Remotion plays the
+   * frames by scene-local index, so they appear at `from`. Remove it when the scene is rebuilt at its new position.
+   */
+  blendFrom?: number;
 };
 
 export const SCENES: readonly SceneDef[] = [
   { id: "s01_website", name: "Website", from: 0, durationInFrames: 270, source: "blender" },
-  { id: "s02_turnstile", name: "Turnstile with Face ID", from: 270, durationInFrames: 180, source: "blender" },
-  { id: "s03_cctv", name: "CCTV", from: 450, durationInFrames: 150, source: "blender" },
-  { id: "s04_english", name: "English class", from: 600, durationInFrames: 210, source: "blender" },
-  { id: "s05_russian", name: "Russian class", from: 810, durationInFrames: 180, source: "blender" },
-  { id: "s06_football", name: "Football field", from: 990, durationInFrames: 240, source: "blender" },
+  { id: "s02_turnstile", name: "Turnstile with Face ID", from: 270, durationInFrames: 240, source: "blender" }, // 8 s (2026-11-27)
+  // Moved 450 → 510 on 2026-11-27; its .blend and approved preview are numbered 450–599 (not re-rendered).
+  { id: "s03_cctv", name: "CCTV", from: 510, durationInFrames: 150, source: "blender", blendFrom: 450 },
+  { id: "s04_english", name: "English class", from: 660, durationInFrames: 210, source: "blender" },
+  { id: "s05_russian", name: "Russian class", from: 870, durationInFrames: 150, source: "blender" }, // 6 → 5 s (2026-11-27)
+  { id: "s06_football", name: "Football field", from: 1020, durationInFrames: 210, source: "blender" }, // 8 → 7 s (2026-11-27)
   { id: "s07_it", name: "IT class", from: 1230, durationInFrames: 240, source: "blender" },
   { id: "s08_cafeteria", name: "Cafeteria — plov", from: 1470, durationInFrames: 240, source: "blender" },
   { id: "s09_dormitory", name: "Dormitory", from: 1710, durationInFrames: 210, source: "blender" },
@@ -112,8 +120,32 @@ export const s01PhotoScale = (frame: number): number => {
   return Math.exp(h00 * ln0 + h10 * 0 * n + h01 * ln1 + h11 * rate * n);
 };
 
+// --------------------------------------------------------------------------- scene 2 beats
+
+/**
+ * Scene 2 "Turnstile with Face ID" beats — absolute film frames (scene 2 = 270–509). docs/storyboard.md → Scene 2.
+ * Read by blender/scripts/scene_02_turnstile.py (via blender/timeline.json) and by the Face ID screen (src/s02/).
+ */
+export const S02_BEATS = {
+  dissolveEnd: 300, // projected photo → 3D replica complete (ENTRANCE_PROJ alpha 0; fixed by blender/kit/entrance.blend)
+  zoomStart: 330, // camera glides toward the guard booth, 18 → 85 mm while it decelerates …
+  boothStop: 358, // … exact stop, close on the Face ID terminal of the turnstile beside the booth
+  scanStart: 362, // scan line sweeps the dot lattice top → bottom (display red)
+  scanEnd: 388,
+  granted: 391, // display + turnstile LEDs red → green, check glyph
+  wingsOpenStart: 395, // the turnstile glass wing swings open …
+  wingsOpenEnd: 415,
+  moveOn: 398, // camera leaves the terminal, into the lane (85 → 24 mm)
+  lanePass: 420, // camera passes the wing line
+  revealEnd: 470, // slow, calm glide into the courtyard toward the glass cafeteria (past the potted palms) …
+  tiltStart: 460, // … the camera tilts down to the paving and sinks into it (smooth, accelerating dive)
+  exitHold: 503, // S hand-off window 503–509 (constant 0.12 m/frame down)
+};
+
 export const sceneEnd = (s: SceneDef): number => s.from + s.durationInFrames - 1;
 export const framesDirOf = (s: SceneDef): string => s.framesDir ?? `renders/${s.id}`;
+/** First frame number of the scene inside its .blend and render files (see SceneDef.blendFrom). */
+export const blendFromOf = (s: SceneDef): number => s.blendFrom ?? s.from;
 
 // Fail loudly if the timeline has gaps, overlaps or the wrong total length.
 (() => {

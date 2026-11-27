@@ -1,9 +1,13 @@
+// 0) Mirrors every scene's frames renders/<sceneId>/NNNN.png → public/renders/<sceneId>/ (only frames inside the
+//    scene's .blend frame range (blendFrom…blendEnd) from blender/timeline.json; changed files are recopied, frames no longer in renders/ are removed).
+//    So any render that writes into renders/<sceneId>/ — npm run blender:render or a hand-run blender.exe — reaches
+//    Remotion with one `npm run sync` (run automatically by blender:render, dev and preview).
 // 1) Scans public/renders/<sceneId>/ for frame sequences (e.g. 0270.png) and writes
 //    src/generated/renders.json, which <SceneSequence> reads to decide image sequence vs. placeholder.
 // 2) Mirrors assets/audio/{sfx,music}/ into public/audio/ and assets/{fonts,hero,web_images,brand}/ into public/ so Remotion
 //    can serve them (the copies in public/ are git-ignored; assets/ is the source).
 // Usage: node scripts/sync-renders.mjs   (npm run sync)
-import { cpSync, existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,13 +15,55 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const publicRenders = join(root, "public", "renders");
 const manifestPath = join(root, "src", "generated", "renders.json");
 
+const FRAME = /^(\d+)\.(png|jpg)$/i;
+const timelinePath = join(root, "blender", "timeline.json");
+const scenes = existsSync(timelinePath) ? JSON.parse(readFileSync(timelinePath, "utf8")).scenes : [];
+// Scene folders renders/<id>/ plus scene-owned layer folders renders/<id>_<layer>/ (e.g. s02_turnstile_proj).
+const rendersRoot = join(root, "renders");
+const folders = existsSync(rendersRoot)
+  ? readdirSync(rendersRoot).flatMap((dir) => {
+      const def = scenes.find((s) => dir === s.id || dir.startsWith(`${s.id}_`));
+      return def ? [{ dir, def }] : [];
+    })
+  : [];
+for (const { dir, def } of folders) {
+  const src = join(rendersRoot, dir);
+  if (!statSync(src).isDirectory()) continue;
+  const frames = readdirSync(src).filter((f) => {
+    const m = FRAME.exec(f);
+    return m && Number(m[1]) >= (def.blendFrom ?? def.from) && Number(m[1]) <= (def.blendEnd ?? def.end);
+  });
+  if (frames.length === 0) continue; // nothing rendered here yet: leave any existing public copy alone
+  const dst = join(publicRenders, dir);
+  mkdirSync(dst, { recursive: true });
+  const keep = new Set(frames);
+  let copied = 0;
+  let removed = 0;
+  for (const f of readdirSync(dst)) {
+    if (FRAME.test(f) && !keep.has(f)) {
+      rmSync(join(dst, f));
+      removed++;
+    }
+  }
+  for (const f of frames) {
+    const a = statSync(join(src, f));
+    const out = join(dst, f);
+    const b = existsSync(out) ? statSync(out) : null;
+    if (!b || b.size !== a.size || b.mtimeMs < a.mtimeMs) {
+      copyFileSync(join(src, f), out);
+      copied++;
+    }
+  }
+  console.log(`  renders/${dir} → public/renders/${dir}: ${frames.length} frames (${copied} copied, ${removed} removed)`);
+}
+
 const manifest = {};
 if (existsSync(publicRenders)) {
   for (const id of readdirSync(publicRenders).sort()) {
     const dir = join(publicRenders, id);
     if (!statSync(dir).isDirectory()) continue;
     const frames = readdirSync(dir)
-      .map((f) => /^(\d+)\.(png|jpg)$/i.exec(f))
+      .map((f) => FRAME.exec(f))
       .filter(Boolean)
       .map((m) => ({ n: Number(m[1]), pad: m[1].length, ext: m[2].toLowerCase() }))
       .sort((a, b) => a.n - b.n);

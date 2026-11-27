@@ -4,10 +4,10 @@
 // Usage: npm run blender:render -- <scene> [--preview] [--frames <start>..<end>]
 //   <scene>    scene id from src/timeline.ts, e.g. s02_turnstile
 //   --preview  960×540 at 16 EEVEE samples (from blender/timeline.json)
-//   --frames   render a sub-range of absolute film frames
+//   --frames   render a sub-range, in the .blend frame numbering (= film frames unless the scene has blendFrom)
 // Blender path: env BLENDER_EXE, default C:\Program Files\Blender Foundation\Blender 5.3\blender.exe
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,16 +35,17 @@ const blendFile = join(root, "blender", "scenes", `${scene}.blend`);
 if (!existsSync(blendFile)) fail(`Missing ${blendFile}`);
 if (!existsSync(blender)) fail(`Blender not found at ${blender} (set BLENDER_EXE)`);
 
-let [start, end] = [def.from, def.end];
+// Blender numbering (= film frames unless the scene has blendFrom: built before a timeline shift).
+const [bFrom, bEnd] = [def.blendFrom ?? def.from, def.blendEnd ?? def.end];
+let [start, end] = [bFrom, bEnd];
 if (framesArg) {
   const m = /^(\d+)\.\.(\d+)$/.exec(framesArg);
   if (!m) fail("--frames expects <start>..<end>");
   [start, end] = [Number(m[1]), Number(m[2])];
-  if (start < def.from || end > def.end || start > end) fail(`--frames must lie within ${def.from}..${def.end}`);
+  if (start < bFrom || end > bEnd || start > end) fail(`--frames must lie within ${bFrom}..${bEnd} (.blend numbering)`);
 }
 
 const outDir = join(root, "renders", scene);
-const pubDir = join(root, "public", "renders", scene);
 mkdirSync(outDir, { recursive: true });
 
 // Settings applied on top of the .blend just for this run (nothing is saved back to the file).
@@ -65,12 +66,15 @@ const r = spawnSync(
   ["-b", blendFile, "--python-expr", expr, "-o", join(outDir, "####"), "-a"],
   { cwd: root, stdio: "inherit" },
 );
-if (r.status !== 0) fail(`Blender exited with ${r.status}`);
 const secs = (Date.now() - t0) / 1000;
-console.log(`Done in ${secs.toFixed(0)} s (${(secs / (end - start + 1)).toFixed(2)} s/frame incl. startup)`);
 
-// A full-range render replaces the public copy; a partial render only adds/overwrites its frames.
-if (!framesArg) rmSync(pubDir, { recursive: true, force: true });
-mkdirSync(pubDir, { recursive: true });
-cpSync(outDir, pubDir, { recursive: true });
-spawnSync("node", ["scripts/sync-renders.mjs"], { cwd: root, stdio: "inherit" });
+// ALWAYS sync — also after a failed or interrupted render, so the frames that did finish reach Studio.
+// sync-renders mirrors renders/<scene>/ → public/renders/<scene>/ and rewrites src/generated/renders.json.
+console.log(`Syncing renders/${scene} → public/renders/${scene} and the render manifest …`);
+const sync = spawnSync("node", ["--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/sync-renders.mjs"], {
+  cwd: root,
+  stdio: "inherit",
+});
+if (r.status !== 0) fail(`Blender exited with ${r.status} (frames rendered so far were synced)`);
+if (sync.status !== 0) fail(`sync-renders failed with ${sync.status}`);
+console.log(`Done in ${secs.toFixed(0)} s (${(secs / (end - start + 1)).toFixed(2)} s/frame incl. startup)`);
