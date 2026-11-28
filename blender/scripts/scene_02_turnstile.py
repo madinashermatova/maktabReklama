@@ -15,11 +15,13 @@ kit slab.
   * 270–300  D hand-off: the camera path, lens (18 mm + the photo's lens shift) and geometry equal entrance.blend's
              CAM_S02_START, so the ENTRANCE_PROJ photo layer (rendered from entrance.blend) lies exactly on this render
   * 300–358  the camera glides toward the guard booth, 18 → 85 mm, exact stop on the Face ID terminal
-  * 362–391  scan on the terminal display (Remotion texture: abstract dot lattice only), red → green; LEDs red → green
-  * 395–420  the glass wing swings open; the camera passes through the lane beside the booth
-  * 420–470  slow, calm glide into the courtyard toward the glass cafeteria, past the potted palms (level, 24 mm)
-  * 460–509  it tilts down to the paving and sinks into it (smooth accelerating dive) into the slab under it: EXIT S
-             matched to scene 3's existing ENTRY (same kit slab, same anchor — scene 3 is not re-rendered)
+  * 366–412  slow scan on the terminal display (Remotion texture: abstract dot lattice only), red → green; LEDs too
+  * 418–465  the glass wing swings open (calm, 30 frames); the camera passes through the lane beside the booth
+  * 465–509  (user, 2026-11-28) fast slide into the courtyard and dive into the paving in ≈ 1.5 s: one Bezier, speed
+             ramp ease-in → fast middle → constant S speed, tilt down from 472, motion blur only here; into the slab
+             under the paving: EXIT S matched to scene 3's existing ENTRY (same kit slab, same anchor — not re-rendered)
+The cafeteria glass is reflective tinted (one-way mirror) in this scene: it reflects the sky, the courtyard and the
+palms; no interior, no interior lights (user, 2026-11-28 — the room is revealed only in scene 8).
 Verticals stay vertical: the camera pitch is locked level until the final tilt into the paving (tiltStart);
 vertical framing uses lens shift only.
 
@@ -29,6 +31,7 @@ photographed) and its automatic opening; the cafeteria's glass-wall details and 
 """
 from __future__ import annotations
 
+import bisect
 import math
 import sys
 from pathlib import Path
@@ -56,6 +59,7 @@ FACEID_DIR = C.RENDERS_DIR / "_faceid"
 # --------------------------------------------------------------------------- scene, replica, kit
 C.reset_scene()
 sc = C.setup_scene(SCENE_ID, samples=64)
+sc.eevee.shadow_pool_size = "1024"  # the planar reflection view of the cafeteria glass needs more shadow pages
 
 with bpy.data.libraries.load(str(ENTRANCE), link=False) as (src, dst):
     dst.collections = ["ENTRANCE_REPLICA"]
@@ -170,19 +174,24 @@ GLAZE_TOP = CAF_H - 0.3  # plaster fascia band above the glazing
 caf = bpy.data.collections.new("CAFETERIA")
 sc.collection.children.link(caf)
 MC = KC.materials()
+MC["glass"] = KC.mirror_glass()  # user 2026-11-28: one-way-mirror look from the courtyard, the interior is shown only in scene 8
 bm = bmesh.new()  # fascia band + the two end walls in the replica's render
 box(bm, f_lo.x - 0.05, f_hi.x + 0.05, CAF_Y - 0.04, CAF_Y + 0.3, GLAZE_TOP, CAF_H)
 for x0_, x1_ in ((f_lo.x - 0.05, f_lo.x + 0.25), (f_hi.x - 0.25, f_hi.x + 0.05)):
     box(bm, x0_, x1_, CAF_Y - 0.04, CAF_Y + 5.05, 0.0, CAF_H)
 obj("cafeteria_fascia_endwalls", bm, [M_render], coll=caf, bevel=0.003)
 CAF_DOOR_X = KC.glass_wall(caf, MC, f_lo.x + 0.25, f_hi.x - 0.25, CAF_Y, 0.0, GLAZE_TOP, door_x=-4.5)  # old doorway axis
-KC.interior(caf, MC, f_lo.x + 0.25, f_hi.x - 0.25, CAF_Y + 0.2, CAF_Y + 5.0, CAF_H - 0.32, random.Random(8),
-            counter_x=(-9.5, -5.5))
-cpd = bpy.data.lightprobes.new("CAF_irradiance", "VOLUME")
-cprobe = bpy.data.objects.new("CAF_irradiance", cpd)
-cprobe.location = ((f_lo.x + f_hi.x) / 2, CAF_Y + 2.6, CAF_H / 2)
-cprobe.scale = ((f_hi.x - f_lo.x) / 2 - 0.4, 2.3, CAF_H / 2 - 0.2)
-caf.objects.link(cprobe)
+# No KC.interior() here: no room, no downlights, no pendants or their lights in scene 2 (opaque mirror glass).
+# Planar reflection probe on the pane plane: an exact mirror image of the sky, courtyard and palms (also off-screen).
+_ptype = next(i.identifier for i in bpy.types.LightProbe.bl_rna.properties["type"].enum_items
+              if i.identifier in ("PLANE", "PLANAR"))
+ppd = bpy.data.lightprobes.new("CAF_planar", _ptype)
+pprobe = bpy.data.objects.new("CAF_planar", ppd)
+pprobe.location = ((f_lo.x + f_hi.x) / 2, CAF_Y + 0.02, GLAZE_TOP / 2)  # 3 cm in front of the panes (coplanar = no effect)
+ppd.influence_distance = 0.4
+pprobe.rotation_euler = (math.radians(90), 0.0, 0.0)  # probe normal (local +Z) → −Y, toward the courtyard
+pprobe.scale = ((f_hi.x - f_lo.x) / 2, GLAZE_TOP / 2, 1.0)
+caf.objects.link(pprobe)
 
 # --------------------------------------------------------------------------- potted palms (modelled, replace the low-poly ones)
 PM = KP.palm_materials()
@@ -375,8 +384,7 @@ for o in ts.all_objects:
 print(f"TURNSTILE visible from the photo camera: {_seen} of {_tested} sampled vertices")
 
 # --------------------------------------------------------------------------- the camera's route and the slab (EXIT S)
-DIVE = Vector((1.2, 12.55, 0.0))  # end of the courtyard glide: right of the palms (planter 2 at x ≈ −0.36), 4 m from the glass
-LAND = Vector((1.26, 13.05, 0.0))  # where the camera sinks into the paving (slab anchor x/y)
+LAND = Vector((1.26, 13.05, 0.0))  # where the camera sinks into the paving (slab anchor x/y), right of the palms
 FINAL_YAW = math.radians(12)  # looking at the cafeteria glass, a little to the left (palms in the left foreground)
 slab_shell = next(o for o in bpy.data.collections["PIECE_slab"].all_objects if o.name.startswith("slab_shell"))
 slab_top_local = max(v[2] for v in slab_shell.bound_box)  # −0.02
@@ -419,15 +427,53 @@ def hermite(p0, m0, p1, m1, t):
 
 
 P_D = Vector((REF_LOC.x, REF_LOC.y + dissolve_y(B["dissolveEnd"]), REF_LOC.z))
-WAY = [  # (frame, position, velocity m/frame)
+P_LANE = Vector((LX, WING_Y, CAM_STOP.z))
+V_LANE = Vector((0.002, 0.07, 0.0))  # m/frame through the wing line
+WAY = [  # (frame, position, velocity m/frame) — up to the wing line
     (B["dissolveEnd"], P_D, Vector((0.0, V1, 0.0))),
     (B["boothStop"], CAM_STOP, Vector((0, 0, 0))),
     (B["moveOn"], CAM_STOP, Vector((0, 0, 0))),
-    (B["lanePass"], Vector((LX, WING_Y, CAM_STOP.z)), Vector((0.002, 0.07, 0.0))),
-    (B["lanePass"] + 20, Vector((LX + 0.06, BOOTH_Y1 + 0.1, CAM_STOP.z)), Vector((0.03, 0.06, 0.0))),
-    (B["revealEnd"], Vector((DIVE.x, DIVE.y, CAM_STOP.z - 0.05)), Vector((0.004, 0.04, -0.006))),
-    (EXIT_START, SLAB_ANCHOR + Vector((0, 0, S_SPEED * E_HOLD)), Vector((0, 0, -S_SPEED))),
+    (B["lanePass"], P_LANE, V_LANE),
 ]
+
+# Courtyard slide + dive (user 2026-11-28: ≈ 1.5 s from the wing line to the cut): ONE cubic Bezier from the wing line
+# into the slab — straight out of the lane, sweeping forward and down, ending vertical (the S direction) — travelled
+# with a speed ramp v(u) = v0 + (v1 − v0)·smootherstep(u) + A·sin²(πu): eases in from the lane speed, fast middle,
+# arrives at exactly the constant S speed with zero acceleration (no jump at the hand-off).
+P_EXIT = SLAB_ANCHOR + Vector((0, 0, S_SPEED * E_HOLD))
+BZ = (P_LANE, P_LANE + V_LANE.normalized() * 3.1,  # long: straight out past the booth corner
+      P_EXIT + Vector((0, 0, min(0.9, P_LANE.z - P_EXIT.z - 0.05))), P_EXIT)
+
+
+def bezier(t):
+    a, b_, c_, d_ = BZ
+    u = 1 - t
+    return a * u ** 3 + b_ * 3 * u * u * t + c_ * 3 * u * t * t + d_ * t ** 3
+
+
+_N_ARC = 4000
+_arc_t = [k / _N_ARC for k in range(_N_ARC + 1)]
+_arc_s = [0.0]
+for _k in range(1, _N_ARC + 1):
+    _arc_s.append(_arc_s[-1] + (bezier(_arc_t[_k]) - bezier(_arc_t[_k - 1])).length)
+CY_LEN = _arc_s[-1]
+CY_N = EXIT_START - B["lanePass"]
+CY_V0, CY_V1 = V_LANE.length, S_SPEED
+CY_A = 2 * (CY_LEN / CY_N - (CY_V0 + CY_V1) / 2)
+assert CY_A > 0, f"courtyard path too short for a fast middle ({CY_LEN:.2f} m in {CY_N} frames)"
+print(f"COURTYARD slide: {CY_LEN:.2f} m in {CY_N} frames, speed {CY_V0:.3f} → peak "
+      f"≈{CY_V0 + (CY_V1 - CY_V0) / 2 + CY_A:.3f} → {CY_V1:.3f} m/frame")
+
+
+def courtyard_position(f):
+    u = (f - B["lanePass"]) / CY_N
+    s = CY_N * (CY_V0 * u + (CY_V1 - CY_V0) * (u ** 6 - 3 * u ** 5 + 2.5 * u ** 4)
+                + CY_A * (u / 2 - math.sin(2 * math.pi * u) / (4 * math.pi)))
+
+    k = min(max(bisect.bisect_left(_arc_s, s), 1), _N_ARC)
+    s0, s1 = _arc_s[k - 1], _arc_s[k]
+    t = _arc_t[k - 1] + (_arc_t[k] - _arc_t[k - 1]) * ((s - s0) / (s1 - s0) if s1 > s0 else 0.0)
+    return bezier(t)
 
 
 def cam_position(f):
@@ -435,6 +481,8 @@ def cam_position(f):
         return Vector((REF_LOC.x, REF_LOC.y + dissolve_y(f), REF_LOC.z))
     if f >= EXIT_START:
         return SLAB_ANCHOR + Vector((0, 0, S_SPEED * (F1 - f)))
+    if f >= B["lanePass"]:
+        return courtyard_position(f)
     for (fa, pa, va), (fb, pb, vb) in zip(WAY, WAY[1:]):
         if fa <= f <= fb:
             n = fb - fa
@@ -457,7 +505,7 @@ def cam_rotation(f):
     """Pitch locked level (verticals stay vertical) until the final tilt; yaw: ahead → terminal → lane → cafeteria."""
     yaw = AIM_Y * ss(f, B["dissolveEnd"] + 20, B["boothStop"] - 4)
     yaw *= 1 - ss(f, B["moveOn"], B["moveOn"] + 18)
-    yaw += FINAL_YAW * ss(f, B["lanePass"] + 10, B["revealEnd"])  # gentle turn toward the cafeteria glass
+    yaw += FINAL_YAW * ss(f, B["lanePass"] - 8, EXIT_START)  # turns with the slide to the slab heading
     pitch = LEVEL * (1 - ss(f, B["tiltStart"], EXIT_START))
     return (pitch, 0.0, yaw)
 
@@ -490,6 +538,13 @@ for f, v in ((F0, False), (B["zoomStart"] + 4, True), (B["moveOn"] + 8, False)):
 for f, p in ((F0, SCREEN_C), (B["moveOn"], SCREEN_C)):
     C.key_transform(focus, f, location=tuple(p))
 C.set_easing(focus)
+
+# --------------------------------------------------------------------------- motion blur: only on the fast courtyard slide
+# Shutter 0 (crisp) for the photo match, the approach and the turnstile; opens to 0.5 (180°) as the slide speeds up.
+sc.render.use_motion_blur = True
+for f, sh in ((F0, 0.0), (B["lanePass"] - 6, 0.0), (B["lanePass"] + 8, 0.5), (F1, 0.5)):
+    sc.render.motion_blur_shutter = sh
+    sc.render.keyframe_insert("motion_blur_shutter", frame=f)
 
 # --------------------------------------------------------------------------- colour: approved exterior look
 vs_ = sc.view_settings
@@ -564,6 +619,6 @@ if not NO_BAKE:
 
 sc.frame_set(F0)
 sc["s02_notes"] = (f"D entry {F0}–{B['dissolveEnd']} (photo layer from entrance.blend ENTRANCE_PROJ), turnstile lane x={LX:.3f} "
-                   f"beside the booth, stop {B['boothStop']}, courtyard glide to {B['revealEnd']}, glass cafeteria ahead, "
+                   f"beside the booth, stop {B['boothStop']}, fast courtyard slide + dive {B['lanePass']}–{EXIT_START}, mirror-glass cafeteria ahead, "
                    f"EXIT S {EXIT_START}–{F1} (SLAB.inst, look switch at {SLAB_IN}).")
 print("saved", C.save_scene(SCENE_ID))

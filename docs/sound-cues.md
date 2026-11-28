@@ -27,13 +27,12 @@ Frames from `S02_BEATS` (`src/timeline.ts`; real layout since 2026-11-27: one tu
 | s02_dissolve | 270 → 300 | photo dissolves into the 3D entrance | tail of `s01_dive_whoosh`, settling into soft morning outdoor air |
 | s02_approach | 300 → 358 | camera glides toward the guard booth and the turnstile, decelerating | soft airy glide that settles into stillness at 358 |
 | s02_stop | 358 | exact stop on the Face ID terminal | (silence beat) |
-| s02_scan | 362 → 388 | red scan line sweeps the dot lattice | soft rising scanning tone |
-| s02_ticks | 366 → 388 | dots light up in rows | tiny digital ticks in small groups |
-| s02_granted | 391 | lattice + LEDs red → green, check glyph | two-tone confirmation beep |
-| s02_wing | 395 → 415 | the glass wing swings open | quiet servo whir, soft settle click at ≈ 415 |
-| s02_pass | 405 → 420 | camera passes through the lane beside the booth | light close pass-by air |
-| s02_courtyard | 420 → 470 | slow calm glide into the courtyard toward the glass cafeteria | morning courtyard air; a faint warm room tone through the glass (no voices), soft leaf rustle as the palms pass (≈ 430–450) |
-| s02_dive_whoosh | 460 → 509 | camera tilts down and sinks smoothly into the paving and the slab | soft, slowly building downward whoosh (no sudden hit) into scene 3's `s03_slab_tail` |
+| s02_scan | 366 → 408 | red scan line sweeps the dot lattice (slow) | soft rising scanning tone |
+| s02_ticks | 370 → 408 | dots light up in rows | tiny digital ticks in small groups |
+| s02_granted | 412 | lattice + LEDs red → green, check glyph | two-tone confirmation beep |
+| s02_wing | 418 → 448 | the glass wing swings open (calm) | quiet servo whir, soft settle click at ≈ 448 |
+| s02_pass | 440 → 465 | camera moves through the lane beside the booth | light close pass-by air |
+| s02_slide_whoosh | 465 → 509 | fast slide into the courtyard past the mirror-glass cafeteria, palms flash by (≈ 482–492), arc down into the paving and the slab | quick building whoosh with a short leaf flick at ≈ 485 (no voices, no room tone — the glass is a mirror), peaking ≈ 485–495, carrying into scene 3's `s03_slab_tail` (no sudden hit) |
 
 ## Scene 3 — CCTV security (510–659)
 

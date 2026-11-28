@@ -5,7 +5,8 @@ turnstile is the cafeteria, with a glass facade).
     import kit_cafeteria as KC
     M = KC.materials()
     KC.glass_wall(coll, M, x0, x1, y, z0, z1, door_x=...)        # facade plane y = outer glass face, inside = +Y
-    KC.interior(coll, M, x0, x1, y0, y1, h, rnd)               # furnished room behind it (+Y side)
+    KC.interior(coll, M, x0, x1, y0, y1, h, rnd)               # furnished room behind it (+Y side) — scene 8 only
+    M["glass"] = KC.mirror_glass()                              # scene 2 (outside): reflective tinted glass, no interior
 
 Glass wall (design language A shell): slim graphite (#2E3135) mullions on a 1.6 m-ish module, one transom at door
 height (2.7 m), large clear panes, a frameless glass double door with two steel pull bars.
@@ -74,6 +75,14 @@ def materials():
     M["warm_emit"] = K.mat_emit("CAF_warm_emit", kelvin=WARM_K, strength=12.0)
     M["downlight_emit"] = K.mat_emit("CAF_downlight_emit", kelvin=3000, strength=6.0)
     return M
+
+
+def mirror_glass():
+    """Reflective tinted facade glass (one-way-mirror look) for the OUTSIDE view (scene 2, user 2026-11-28): opaque,
+    cool grey-blue metallic reflection of the sky, courtyard and palms; the interior is revealed only in scene 8."""
+    m, nt, b = K.new_material("CAF_glass_mirror")
+    K.bsdf_set(b, color=C.hex_rgba("#8C9AA3"), rough=0.02, metal=1.0, coat=1.0, coat_rough=0.01)
+    return m
 
 
 def _box(bm, x0, x1, y0, y1, z0, z1):

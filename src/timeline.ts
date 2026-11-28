@@ -130,15 +130,14 @@ export const S02_BEATS = {
   dissolveEnd: 300, // projected photo → 3D replica complete (ENTRANCE_PROJ alpha 0; fixed by blender/kit/entrance.blend)
   zoomStart: 330, // camera glides toward the guard booth, 18 → 85 mm while it decelerates …
   boothStop: 358, // … exact stop, close on the Face ID terminal of the turnstile beside the booth
-  scanStart: 362, // scan line sweeps the dot lattice top → bottom (display red)
-  scanEnd: 388,
-  granted: 391, // display + turnstile LEDs red → green, check glyph
-  wingsOpenStart: 395, // the turnstile glass wing swings open …
-  wingsOpenEnd: 415,
-  moveOn: 398, // camera leaves the terminal, into the lane (85 → 24 mm)
-  lanePass: 420, // camera passes the wing line
-  revealEnd: 470, // slow, calm glide into the courtyard toward the glass cafeteria (past the potted palms) …
-  tiltStart: 460, // … the camera tilts down to the paving and sinks into it (smooth, accelerating dive)
+  scanStart: 366, // scan line sweeps the dot lattice top → bottom (display red) — slower, unhurried (2026-11-28)
+  scanEnd: 408,
+  granted: 412, // display + turnstile LEDs red → green, check glyph
+  wingsOpenStart: 418, // the turnstile glass wing swings open (calm motorised swing) …
+  wingsOpenEnd: 448,
+  moveOn: 424, // camera leaves the terminal, into the lane (85 → 24 mm)
+  lanePass: 465, // camera passes the wing line → fast courtyard slide + dive into the paving (465–509 ≈ 1.5 s, 2026-11-28)
+  tiltStart: 472, // the camera tilts down to the paving while it accelerates into the dive
   exitHold: 503, // S hand-off window 503–509 (constant 0.12 m/frame down)
 };
 
